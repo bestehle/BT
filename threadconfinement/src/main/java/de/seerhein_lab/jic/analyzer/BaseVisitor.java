@@ -238,16 +238,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				bugs.add(bug);
 			}
 
-			// addBug(bug.getBugPattern().getType(), Confidence.HIGH,
-			// "subsequent bug caused by ["
-			// + bug.getMessage() + " in " +
-			// targetMethod.getJavaClass().getClassName() + "."
-			// + targetMethod.getMethod().getName() +
-			// targetMethod.getMethod().getSignature()
-			// + ":" + bug.getPrimarySourceLineAnnotation().getStartLine() +
-			// "]",
-			// pc.getCurrentInstruction());
-
 			addBug(bug.getBugPattern().getType().startsWith("SUBSEQUENT_") ? bug.getBugPattern()
 					.getType() : "SUBSEQUENT_" + bug.getBugPattern().getType(), Confidence.HIGH,
 					"subsequent bug caused by bug in " + targetMethod.getJavaClass().getClassName()
@@ -426,8 +416,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				+ (frame.getLocalVars()[obj.getIndex()] instanceof ReferenceSlot ? " ("
 						+ ((ReferenceSlot) frame.getLocalVars()[obj.getIndex()]).getObject(heap)
 						+ ")" : ""));
+
 		if (frame.getLocalVars()[obj.getIndex()] == null)
 			throw new AssertionError("wrong index for local vars");
+
 		frame.getStack().pushByRequiredSize(frame.getLocalVars()[obj.getIndex()]);
 		pc.advance();
 	}
