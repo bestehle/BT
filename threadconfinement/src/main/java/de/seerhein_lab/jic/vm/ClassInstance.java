@@ -15,6 +15,7 @@ import java.util.UUID;
  */
 public final class ClassInstance extends HeapObject {
 	private Map<String, UUID> refers = new HashMap<String, UUID>();
+	private boolean stackConfined = true;
 
 	/**
 	 * Constructor.
@@ -221,6 +222,14 @@ public final class ClassInstance extends HeapObject {
 		ClassInstance other = (ClassInstance) obj;
 
 		return refers.equals(other.refers);
+	}
+
+	public boolean isStackConfined() {
+		return stackConfined;
+	}
+
+	public void setStackConfined(boolean stackConfined) {
+		this.stackConfined = stackConfined;
 	}
 
 }

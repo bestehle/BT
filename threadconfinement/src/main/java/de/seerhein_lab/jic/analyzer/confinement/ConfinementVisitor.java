@@ -14,8 +14,10 @@ import de.seerhein_lab.jic.analyzer.QualifiedMethod;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.cache.AnalysisCache.Check;
 import de.seerhein_lab.jic.slot.Slot;
+import de.seerhein_lab.jic.vm.ClassInstance;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
+import de.seerhein_lab.jic.vm.HeapObject;
 import de.seerhein_lab.jic.vm.PC;
 import de.seerhein_lab.jic.vm.ReferenceSlot;
 import edu.umd.cs.findbugs.ba.ClassContext;
@@ -57,6 +59,16 @@ public class ConfinementVisitor extends BaseVisitor {
 
 	@Override
 	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
+		if (!(valueToPut instanceof ReferenceSlot))
+			return;
+
+		HeapObject value = ((ReferenceSlot) valueToPut).getObject(heap);
+
+		((ClassInstance) value).setStackConfined(false);
+
+		for (HeapObject referred : value.getReferredObjects()) {
+			((ClassInstance) referred).setStackConfined(false);
+		}
 	}
 
 	@Override
