@@ -281,7 +281,8 @@ public abstract class HeapObject {
 			return "This";
 		if (this.isExternal())
 			return (immutable ? "immutable" : "mutable") + "External";
-		return (immutable ? "immutable" : "mutable") + "Internal (" + id + ")";
+		return (immutable ? "immutable" : "mutable") + "Internal ("
+				+ String.valueOf(id).substring(0, 13) + ")";
 	}
 
 	/*
