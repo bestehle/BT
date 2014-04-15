@@ -74,6 +74,8 @@ public abstract class BaseMethodAnalyzer {
 	}
 
 	public final synchronized AnalysisResult analyze() {
+		logger.info(methodGen.getClassName() + "." + methodGen.getMethod().getName()
+				+ methodGen.getMethod().getSignature());
 		OpStack callerStack = new OpStack();
 		Heap callerHeap = getHeap();
 		callerStack.push(ReferenceSlot.getThisReference(callerHeap));
