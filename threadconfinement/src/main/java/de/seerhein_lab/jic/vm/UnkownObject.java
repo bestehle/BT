@@ -12,7 +12,7 @@ import java.util.NoSuchElementException;
  * object is itself external.
  * 
  */
-public final class ExternalObject extends HeapObject {
+public final class UnkownObject extends HeapObject {
 
 	/**
 	 * Constructor.
@@ -20,9 +20,10 @@ public final class ExternalObject extends HeapObject {
 	 * @param heap
 	 *            Heap this external object resides on. Must not be null.
 	 * @param immutable
+	 * @param type
 	 */
-	public ExternalObject(Heap heap, boolean immutable) {
-		super(heap, immutable);
+	public UnkownObject(Heap heap, boolean immutable, String type) {
+		super(heap, immutable, type);
 	}
 
 	/**
@@ -33,7 +34,7 @@ public final class ExternalObject extends HeapObject {
 	 * @param heap
 	 *            Heap this external object resides on. Must not be null.
 	 */
-	public ExternalObject(ExternalObject external, Heap heap) {
+	public UnkownObject(UnkownObject external, Heap heap) {
 		super(external, heap);
 	}
 
@@ -59,8 +60,8 @@ public final class ExternalObject extends HeapObject {
 	 * @see de.seerhein_lab.jic.vm.HeapObject#copy(de.seerhein_lab.jic.vm.Heap)
 	 */
 	@Override
-	protected ExternalObject copy(Heap heap) {
-		return new ExternalObject(this, heap);
+	protected UnkownObject copy(Heap heap) {
+		return new UnkownObject(this, heap);
 	}
 
 	/*
@@ -72,7 +73,8 @@ public final class ExternalObject extends HeapObject {
 	 */
 	@Override
 	protected HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited) {
-		return heap.getExternalObject(this.isImmutable());
+		return null; // TODO
+		// return heap.getExternalObject(this.isImmutable());
 	}
 
 	/*
@@ -126,7 +128,7 @@ public final class ExternalObject extends HeapObject {
 			return true;
 		if (!super.equals(obj))
 			return false;
-		return (obj instanceof ExternalObject);
+		return (obj instanceof UnkownObject);
 	}
 
 }

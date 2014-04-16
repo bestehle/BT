@@ -101,10 +101,10 @@ public final class ClassInstance extends HeapObject {
 	 *            this object.
 	 */
 	public void copyReferredObjectsTo(HeapObject origin) {
-		if (origin instanceof ExternalObject) {
-			this.heap.publish(this);
-			return;
-		}
+		// if (origin instanceof ExternalObject) {
+		// this.heap.publish(this);
+		// return;
+		// }
 
 		ClassInstance originClassInstance = (ClassInstance) origin;
 

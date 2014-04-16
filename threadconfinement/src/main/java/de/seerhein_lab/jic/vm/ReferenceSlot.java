@@ -61,19 +61,6 @@ public class ReferenceSlot extends Slot {
 	}
 
 	/**
-	 * Returns a reference to the external object in the indicated heap.
-	 * 
-	 * @param heap
-	 *            the heap a reference to whose external object is to be
-	 *            returned.
-	 * @param immutable
-	 * @return a reference to the external object
-	 */
-	public static ReferenceSlot getExternalReference(Heap heap, boolean immutable) {
-		return new ReferenceSlot(heap.getExternalObject(immutable));
-	}
-
-	/**
 	 * Returns the null reference.
 	 * 
 	 * @return the null reference
