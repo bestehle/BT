@@ -64,7 +64,11 @@ public class ConfinementVisitor extends BaseVisitor {
 
 		HeapObject value = ((ReferenceSlot) valueToPut).getObject(heap);
 
-		((ClassInstance) value).setStackConfined(false);
+		HeapObject targetObject = targetReference.getObject(heap);
+
+		if (targetObject.equals(heap.getThisInstance()))
+
+			((ClassInstance) value).setStackConfined(false);
 
 		for (HeapObject referred : value.getReferredObjects()) {
 			((ClassInstance) referred).setStackConfined(false);

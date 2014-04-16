@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import net.jcip.annotations.ThreadSafe;
@@ -147,7 +148,14 @@ public final class ClassAnalyzer {
 			BaseMethodAnalyzer methodAnalyzer = new ConfinementAnalyzer(classContext, methodGen,
 					cache, 0);
 
-			bugs.addAll(methodAnalyzer.analyze().getBugs());
+			AnalysisResult result = methodAnalyzer.analyze();
+			bugs.addAll(result.getBugs());
+
+			Set<EvaluationResult> results = result.getResults();
+
+			for (EvaluationResult evaluationResult : results) {
+				// evaluationResult.getHeap().
+			}
 		}
 
 		return bugs.getCollection();
