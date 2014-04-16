@@ -1,5 +1,6 @@
 package de.seerhein_lab.jic.vm;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,8 +34,8 @@ public class Heap {
 	/**
 	 * Constructor. Creates the 'this' instance and the external object.
 	 */
-	public Heap(boolean immutable) {
-		HeapObject thisObject = new ClassInstance(this, immutable);
+	public Heap(String type) {
+		HeapObject thisObject = new ClassInstance(this, ClassHelper.isImmutable(type), type);
 		thisID = thisObject.getId();
 		objects.put(thisID, thisObject);
 
@@ -50,7 +51,7 @@ public class Heap {
 	}
 
 	public Heap() {
-		this(false);
+		this("java.lang.Object");
 	}
 
 	/**
@@ -132,24 +133,27 @@ public class Heap {
 	/**
 	 * Creates a new class instance and registers it in the heap.
 	 * 
+	 * @param immutable
+	 *            The immutablility of the class instance
+	 * 
 	 * @return The newly created class instance.
 	 */
-	public ClassInstance newClassInstance(boolean immutable) {
-		ClassInstance object = new ClassInstance(this, immutable);
+	public ClassInstance newClassInstance(boolean immutable, String type) {
+		ClassInstance object = new ClassInstance(this, immutable, type);
 		objects.put(object.getId(), object);
 		return object;
 	}
 
 	public ClassInstance newClassInstanceOfDynamicType(Type type) {
-		return newClassInstance(ClassHelper.isImmutable(type));
+		return newClassInstance(ClassHelper.isImmutable(type), type.getSignature());
 	}
 
 	public ClassInstance newClassInstanceOfStaticType(Type type) {
-		return newClassInstance(ClassHelper.isImmutableAndFinal(type));
+		return newClassInstance(ClassHelper.isImmutableAndFinal(type), type.getSignature());
 	}
 
 	public ClassInstance newClassInstanceOfDynamicType(String type) {
-		return newClassInstance(ClassHelper.isImmutable(type));
+		return newClassInstance(ClassHelper.isImmutable(type), type);
 	}
 
 	/**
@@ -157,8 +161,8 @@ public class Heap {
 	 * 
 	 * @return The newly created array.
 	 */
-	public Array newArray() {
-		Array object = new Array(this);
+	public Array newArray(String type) {
+		Array object = new Array(this, type);
 		objects.put(object.getId(), object);
 		return object;
 	}
@@ -255,6 +259,10 @@ public class Heap {
 			return false;
 
 		return (publishedMutableObjects.equals(other.publishedMutableObjects));
+	}
+
+	public Collection<HeapObject> getObjects() {
+		return objects.values();
 	}
 
 }
