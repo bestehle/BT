@@ -15,7 +15,6 @@ import java.util.UUID;
  */
 public final class ClassInstance extends HeapObject {
 	private Map<String, UUID> refers = new HashMap<String, UUID>();
-	private boolean stackConfined = true;
 
 	/**
 	 * Constructor.
@@ -23,8 +22,8 @@ public final class ClassInstance extends HeapObject {
 	 * @param heap
 	 *            Heap this class instance resides on. Must not be null.
 	 */
-	public ClassInstance(Heap heap, boolean immutable) {
-		super(heap, immutable);
+	public ClassInstance(Heap heap, boolean immutable, String type) {
+		super(heap, immutable, type);
 	}
 
 	/**
@@ -78,7 +77,7 @@ public final class ClassInstance extends HeapObject {
 	 */
 	@Override
 	protected HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited) {
-		ClassInstance copiedObject = heap.newClassInstance(this.isImmutable());
+		ClassInstance copiedObject = heap.newClassInstance(this.isImmutable(), this.getType());
 		visited.put(this, copiedObject);
 
 		for (Entry<String, UUID> entry : this.refers.entrySet()) {
@@ -223,13 +222,4 @@ public final class ClassInstance extends HeapObject {
 
 		return refers.equals(other.refers);
 	}
-
-	public boolean isStackConfined() {
-		return stackConfined;
-	}
-
-	public void setStackConfined(boolean stackConfined) {
-		this.stackConfined = stackConfined;
-	}
-
 }

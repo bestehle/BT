@@ -38,6 +38,7 @@ import org.apache.bcel.generic.MULTIANEWARRAY;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.NEW;
 import org.apache.bcel.generic.NEWARRAY;
+import org.apache.bcel.generic.ObjectType;
 import org.apache.bcel.generic.PUTFIELD;
 import org.apache.bcel.generic.PUTSTATIC;
 import org.apache.bcel.generic.ReturnInstruction;
@@ -207,7 +208,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 			if (resultValue.getKind().equals(EvaluationResult.Kind.EXCEPTION)) {
 				targetResults.add(new EvaluationResult(resultValue.getKind(), new ReferenceSlot(
-						resultHeap.newClassInstance(resultObject.isImmutable())), resultHeap));
+						resultHeap.newClassInstance(resultObject.isImmutable(),
+								resultObject.getType())), resultHeap));
 			} else {
 				((ClassInstance) ((ReferenceSlot) topOfStack).getObject(resultHeap))
 						.copyReferredObjectsTo(resultObject);

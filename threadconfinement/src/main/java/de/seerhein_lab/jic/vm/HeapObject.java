@@ -20,12 +20,14 @@ import de.seerhein_lab.jic.EmercencyBrakeException;
  */
 public abstract class HeapObject {
 	private final static int HEAP_EMERCENCY_BREAK = 200000;
-	private final static int MEMORY_THRESHOLD = 30000000;
 	public static long objects = 0;
 	private final UUID id;
 	protected final Set<UUID> referredBy = new HashSet<UUID>();
 	public final Heap heap;
 	private final boolean immutable;
+
+	private boolean stackConfined = true;
+	private String type;
 
 	/**
 	 * Constructor.
@@ -33,7 +35,7 @@ public abstract class HeapObject {
 	 * @param heap
 	 *            Heap this objects resides on. Must not be null.
 	 */
-	protected HeapObject(Heap heap, boolean immutable) {
+	protected HeapObject(Heap heap, boolean immutable, String type) {
 		if (heap == null)
 			throw new NullPointerException("heap must not be null");
 
@@ -41,11 +43,9 @@ public abstract class HeapObject {
 		if (objects > HEAP_EMERCENCY_BREAK)
 			throw new EmercencyBrakeException();
 
-		// if (Runtime.getRuntime().freeMemory() < MEMORY_THRESHOLD)
-		// throw new EmercencyBrakeException();
-
 		id = UUID.randomUUID();
 		this.immutable = immutable;
+		this.type = type;
 		this.heap = heap;
 	}
 
@@ -269,6 +269,18 @@ public abstract class HeapObject {
 	 * @return newly copied complex object
 	 */
 	protected abstract HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited);
+
+	public boolean isStackConfined() {
+		return stackConfined;
+	}
+
+	public void setStackConfined(boolean stackConfined) {
+		this.stackConfined = stackConfined;
+	}
+
+	public String getType() {
+		return type;
+	}
 
 	/*
 	 * (non-Javadoc)

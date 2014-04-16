@@ -20,9 +20,10 @@ public final class Array extends HeapObject {
 	 * 
 	 * @param heap
 	 *            Heap this array resides on. Must not be null.
+	 * @param type
 	 */
-	public Array(Heap heap) {
-		super(heap, false);
+	public Array(Heap heap, String type) {
+		super(heap, false, type);
 	}
 
 	/**

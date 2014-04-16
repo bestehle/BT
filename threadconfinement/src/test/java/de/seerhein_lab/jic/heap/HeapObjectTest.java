@@ -26,11 +26,11 @@ public class HeapObjectTest {
 	public void setUpHeap() {
 		heap = new Heap();
 
-		a = heap.newClassInstance(false);
-		b = heap.newClassInstance(false);
-		c = heap.newClassInstance(false);
-		d = heap.newClassInstance(false);
-		e = heap.newClassInstance(false);
+		a = heap.newClassInstance(false, "");
+		b = heap.newClassInstance(false, "");
+		c = heap.newClassInstance(false, "");
+		d = heap.newClassInstance(false, "");
+		e = heap.newClassInstance(false, "");
 		f = heap.newArray();
 	}
 
