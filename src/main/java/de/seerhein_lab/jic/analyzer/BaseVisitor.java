@@ -38,7 +38,6 @@ import org.apache.bcel.generic.MULTIANEWARRAY;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.NEW;
 import org.apache.bcel.generic.NEWARRAY;
-import org.apache.bcel.generic.ObjectType;
 import org.apache.bcel.generic.PUTFIELD;
 import org.apache.bcel.generic.PUTSTATIC;
 import org.apache.bcel.generic.ReturnInstruction;
@@ -64,7 +63,6 @@ import de.seerhein_lab.jic.slot.Slot;
 import de.seerhein_lab.jic.slot.VoidSlot;
 import de.seerhein_lab.jic.vm.Array;
 import de.seerhein_lab.jic.vm.ClassInstance;
-import de.seerhein_lab.jic.vm.ExternalObject;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.HeapObject;
@@ -373,6 +371,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		return result;
 	}
 
+	// TODO gibt es eigentlich nicht mehr
 	private void handleLatelyBoundMethod(InvokeInstruction obj) {
 		logger.fine(indentation + obj.toString(false));
 		logger.finest(indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
@@ -895,7 +894,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		frame.getStack().pop();
 
 		// pushes new array reference
-		frame.getStack().push(new ReferenceSlot(heap.newArray()));
+		frame.getStack().push(
+				new ReferenceSlot(heap.newArray(obj.getLoadClassType(constantPoolGen)
+						.getSignature())));
 
 		pc.advance();
 	}
@@ -1249,7 +1250,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			// pop count values for each dimension
 			frame.getStack().pop();
 
-			Array newArray = heap.newArray();
+			Array newArray = heap.newArray(obj.getLoadClassType(constantPoolGen).getSignature());
 
 			if (i == 0) {
 				slot = new ReferenceSlot(newArray);
@@ -1300,7 +1301,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		frame.getStack().pop();
 
 		// push reference to new array onto the stack
-		ReferenceSlot slot = new ReferenceSlot(heap.newArray());
+		ReferenceSlot slot = new ReferenceSlot(heap.newArray(obj.getType().getSignature()));
 
 		frame.getStack().push(slot);
 
