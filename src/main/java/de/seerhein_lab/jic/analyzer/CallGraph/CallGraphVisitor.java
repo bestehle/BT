@@ -10,17 +10,16 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.NEW;
 
 import de.seerhein_lab.jic.analyzer.QualifiedMethod;
-import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.PC;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class CallGraphVisitor extends EmptyVisitor {
 
-	protected CallGraphVisitor(ClassContext classContext, MethodGen methodGen, Frame frame,
-			Heap heap, ConstantPoolGen constantPoolGen, PC pc,
-			CodeExceptionGen[] exceptionHandlers, Set<QualifiedMethod> alreadyVisitedMethods,
-			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-			AnalysisCache cache, int methodInvocationDepth) {
+	protected CallGraphVisitor(ClassContext classContext, MethodGen methodGen,
+			ConstantPoolGen constantPoolGen, PC pc, CodeExceptionGen[] exceptionHandlers,
+			Set<QualifiedMethod> alreadyVisitedMethods, int depth,
+			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch, AnalysisCache cache,
+			int methodInvocationDepth) {
 		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
 				alreadyVisitedMethods, pc, exceptionHandlers, depth, cache, methodInvocationDepth);
 	}

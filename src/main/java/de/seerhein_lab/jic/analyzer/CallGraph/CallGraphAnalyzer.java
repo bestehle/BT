@@ -40,15 +40,12 @@ public final class CallGraphAnalyzer {
 		this.classContext = classContext;
 		this.methodGen = methodGen;
 		exceptionHandlers = methodGen.getExceptionHandlers();
-		this.alreadyVisitedMethods = alreadyVisitedMethods;
-
-		this.depth = depth + 1;
-		this.cache = cache;
-		this.methodInvocationDepth = methodInvocationDepth;
 	}
 
-	protected abstract BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc,
-			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch);
+	protected BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc,
+			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
+		return null;
+	}
 
 	protected abstract Heap getHeap();
 
