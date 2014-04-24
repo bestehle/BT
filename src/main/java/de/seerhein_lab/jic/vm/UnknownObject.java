@@ -12,7 +12,7 @@ import java.util.NoSuchElementException;
  * object is itself external.
  * 
  */
-public final class UnkownObject extends HeapObject {
+public final class UnknownObject extends HeapObject {
 
 	/**
 	 * Constructor.
@@ -22,7 +22,7 @@ public final class UnkownObject extends HeapObject {
 	 * @param immutable
 	 * @param type
 	 */
-	public UnkownObject(Heap heap, boolean immutable, String type) {
+	public UnknownObject(Heap heap, boolean immutable, String type) {
 		super(heap, immutable, type);
 	}
 
@@ -34,7 +34,7 @@ public final class UnkownObject extends HeapObject {
 	 * @param heap
 	 *            Heap this external object resides on. Must not be null.
 	 */
-	public UnkownObject(UnkownObject external, Heap heap) {
+	public UnknownObject(UnknownObject external, Heap heap) {
 		super(external, heap);
 	}
 
@@ -60,8 +60,8 @@ public final class UnkownObject extends HeapObject {
 	 * @see de.seerhein_lab.jic.vm.HeapObject#copy(de.seerhein_lab.jic.vm.Heap)
 	 */
 	@Override
-	protected UnkownObject copy(Heap heap) {
-		return new UnkownObject(this, heap);
+	protected UnknownObject copy(Heap heap) {
+		return new UnknownObject(this, heap);
 	}
 
 	/*
@@ -128,7 +128,7 @@ public final class UnkownObject extends HeapObject {
 			return true;
 		if (!super.equals(obj))
 			return false;
-		return (obj instanceof UnkownObject);
+		return (obj instanceof UnknownObject);
 	}
 
 }
