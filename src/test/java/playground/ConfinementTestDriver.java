@@ -10,36 +10,40 @@ import java.util.logging.Logger;
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 
+import de.seerhein_lab.jic.CallGraphHelper;
 import de.seerhein_lab.jic.Utils;
-import de.seerhein_lab.jic.analyzer.ClassAnalyzer;
-import de.seerhein_lab.jic.cache.AnalysisCache;
-import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class ConfinementTestDriver {
 	private static final String LOGFILEPATH = "log.txt";
+	private static Logger logger;
 
 	public static void main(String[] args) throws ClassNotFoundException, SecurityException,
 			IOException {
 
-		Logger logger = Utils.setUpLogger("ConfinementTestDriver", LOGFILEPATH, Level.ALL);
+		logger = Utils.setUpLogger("ConfinementTestDriver", LOGFILEPATH, Level.ALL);
 
-		JavaClass clazz = Repository.lookupClass("concurrent.StackConfinement");
+		JavaClass clazz = Repository.lookupClass("de.seerhein_lab.jic.analyzer.BaseVisitor");
 
 		ClassContext classContextMock = mock(ClassContext.class);
 
 		when(classContextMock.getJavaClass()).thenReturn(clazz);
 
 		SortedBugCollection bugs = new SortedBugCollection();
-		bugs.addAll(new ClassAnalyzer(classContextMock, new AnalysisCache()).isStackConfined());
+		// bugs.addAll(new ClassAnalyzer(classContextMock, new
+		// AnalysisCache()).isStackConfined());
 
-		logger.log(Level.SEVERE, "bugs: ");
-		for (BugInstance bug : bugs) {
-			logger.log(Level.SEVERE, " " + bug.getType() + " (" + bug.getPriorityString() + ")");
-		}
+		CallGraphHelper.generateCallGraph(clazz);
 
-		logger.log(Level.SEVERE, "end bugs");
+		CallGraphHelper.printCallGraph();
 
+		// logger.log(Level.SEVERE, "bugs: ");
+		// for (BugInstance bug : bugs) {
+		// logger.log(Level.SEVERE, " " + bug.getType() + " (" +
+		// bug.getPriorityString() + ")");
+		// }
+		//
+		// logger.log(Level.SEVERE, "end bugs");
 	}
 }
