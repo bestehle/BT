@@ -11,3 +11,4 @@ doc
 # Maven
 target
 /log.txt
+/bcel-5.1-sources.jar
