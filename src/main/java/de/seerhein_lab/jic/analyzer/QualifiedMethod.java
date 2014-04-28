@@ -1,11 +1,15 @@
 package de.seerhein_lab.jic.analyzer;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 
 public final class QualifiedMethod {
 	private final JavaClass clazz;
 	private final Method method;
+	private final Set<QualifiedMethod> callingMethods = new HashSet<QualifiedMethod>();
 
 	public QualifiedMethod(JavaClass clazz, Method method) {
 		if (clazz == null || method == null) {
@@ -22,6 +26,14 @@ public final class QualifiedMethod {
 
 	public Method getMethod() {
 		return method;
+	}
+
+	public Set<QualifiedMethod> getCallingMethods() {
+		return callingMethods;
+	}
+
+	public void addCallingMethod(QualifiedMethod method) {
+		this.callingMethods.add(method);
 	}
 
 	@Override

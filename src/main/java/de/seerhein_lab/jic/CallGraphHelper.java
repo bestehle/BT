@@ -12,15 +12,15 @@ import org.apache.bcel.generic.InvokeInstruction;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.NEW;
 
+import de.seerhein_lab.jic.analyzer.QualifiedMethod;
+
 public class CallGraphHelper {
 	private static final Logger logger = Logger.getLogger("CallGraphHelper");
 
 	public static void generateCallGraph(JavaClass jClazz) {
-		Class clazz = new Class(jClazz.getClassName());
+		Class clazz = Class.getClass(jClazz);
 
 		for (Method method : jClazz.getMethods()) {
-			ClassMethod m = new ClassMethod(method.getName());
-			clazz.addMethod(m);
 
 			logger.severe("<---  " + method.getName() + method.getSignature() + " --->");
 
@@ -39,17 +39,17 @@ public class CallGraphHelper {
 			for (InstructionHandle ih : instructions) {
 				if (ih.getInstruction() instanceof NEW) {
 					NEW newInstruction = (NEW) ih.getInstruction();
-					Class.addInstantiation(newInstruction.getLoadClassType(constantPool)
-							.getClassName(), m);
+					Class.getClass(newInstruction.getLoadClassType(constantPool).getClassName())
+							.addInstantiation(clazz.getMethod(method));
 
-					System.out.println("new: " + newInstruction.getLoadClassType(constantPool));
+					logger.severe("new: " + newInstruction.getLoadClassType(constantPool));
 				} else if (ih.getInstruction() instanceof InvokeInstruction) {
 					InvokeInstruction invokeInstruction = (InvokeInstruction) ih.getInstruction();
 					Class.getClass(invokeInstruction.getLoadClassType(constantPool).getClassName())
 							.getMethod(invokeInstruction.getMethodName(constantPool))
-							.addCallingMethod(m);
+							.addCallingMethod(clazz.getMethod(method));
 
-					System.out.println(ih.getInstruction().getName() + "   --    "
+					logger.severe(ih.getInstruction().getName() + "   --    "
 							+ invokeInstruction.getLoadClassType(constantPool) + "."
 							+ invokeInstruction.getMethodName(constantPool));
 				}
@@ -60,14 +60,13 @@ public class CallGraphHelper {
 	}
 
 	public static void printCallGraph() {
-		System.out.println("Ergebnis:\n");
+		logger.severe("Ergebnis:\n");
 
 		for (Class clazz : Class.getClasses()) {
-			System.out.println(clazz.getName());
-			System.out.println("\tInstanzierungen: " + clazz.getInstantiations());
-			for (ClassMethod method : clazz.getMethods().values()) {
-				System.out.println("\t" + method.getName());
-				System.out.println("\t\tAufegrufen in:" + method.getCallingMethods());
+			logger.severe(clazz.getName());
+			logger.severe("\tInstanzierungen: " + clazz.getInstantiations());
+			for (QualifiedMethod method : clazz.getMethods().values()) {
+				logger.severe("\t" + method + ": " + method.getCallingMethods());
 			}
 		}
 	}

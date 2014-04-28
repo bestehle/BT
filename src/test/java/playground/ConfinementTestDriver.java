@@ -9,9 +9,17 @@ import java.util.logging.Logger;
 
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.generic.ConstantPoolGen;
+import org.apache.bcel.generic.MethodGen;
 
+import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.CallGraphHelper;
+import de.seerhein_lab.jic.Class;
 import de.seerhein_lab.jic.Utils;
+import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
+import de.seerhein_lab.jic.analyzer.QualifiedMethod;
+import de.seerhein_lab.jic.analyzer.confinement.ConfinementAnalyzer;
+import de.seerhein_lab.jic.cache.AnalysisCache;
 import edu.umd.cs.findbugs.SortedBugCollection;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
@@ -24,19 +32,31 @@ public class ConfinementTestDriver {
 
 		logger = Utils.setUpLogger("ConfinementTestDriver", LOGFILEPATH, Level.ALL);
 
-		JavaClass clazz = Repository.lookupClass("de.seerhein_lab.jic.analyzer.BaseVisitor");
-
-		ClassContext classContextMock = mock(ClassContext.class);
-
-		when(classContextMock.getJavaClass()).thenReturn(clazz);
+		JavaClass clazz = Repository.lookupClass("concurrent.StackConfinement");
 
 		SortedBugCollection bugs = new SortedBugCollection();
-		// bugs.addAll(new ClassAnalyzer(classContextMock, new
-		// AnalysisCache()).isStackConfined());
 
 		CallGraphHelper.generateCallGraph(clazz);
 
 		CallGraphHelper.printCallGraph();
+
+		Class classToAnalyze = Class.getClass("concurrent.AnotherClass");
+
+		AnalysisCache analysisCache = new AnalysisCache();
+
+		for (QualifiedMethod method : classToAnalyze.getInstantiations()) {
+			ClassContext classContextMock = mock(ClassContext.class);
+			when(classContextMock.getJavaClass()).thenReturn(method.getJavaClass());
+
+			MethodGen methodGen = new MethodGen(method.getMethod(), method.getJavaClass()
+					.getClassName(), new ConstantPoolGen(method.getJavaClass().getConstantPool()));
+
+			BaseMethodAnalyzer methodAnalyzer = new ConfinementAnalyzer(classContextMock,
+					methodGen, analysisCache, 0);
+
+			AnalysisResult result = methodAnalyzer.analyze();
+			bugs.addAll(result.getBugs());
+		}
 
 		// logger.log(Level.SEVERE, "bugs: ");
 		// for (BugInstance bug : bugs) {
