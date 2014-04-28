@@ -50,7 +50,7 @@ public class FrameTest {
 		heap = new Heap();
 		thiS = ReferenceSlot.getThisReference(heap);
 		someRef = new ReferenceSlot(heap.newClassInstance(false, ""));
-		someOtherRef = new ReferenceSlot(heap.newArray());
+		someOtherRef = new ReferenceSlot(heap.newArray(""));
 	}
 
 	/**

@@ -35,7 +35,7 @@ public class ClassHelperTest {
 
 	@Parameters
 	public static List<Object[]> data() throws ClassNotFoundException {
-		Class<?>[] classes = de.seerhein_lab.jic.ClassHelperTest.class.getClasses();
+		java.lang.Class<?>[] classes = de.seerhein_lab.jic.ClassHelperTest.class.getClasses();
 		List<Object[]> list = new ArrayList<Object[]>();
 		for (int i = 0; i < classes.length; i++) {
 			list.add(new Object[] { Repository.lookupClass(classes[i]) });

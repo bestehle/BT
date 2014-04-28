@@ -31,7 +31,7 @@ public class HeapObjectTest {
 		c = heap.newClassInstance(false, "");
 		d = heap.newClassInstance(false, "");
 		e = heap.newClassInstance(false, "");
-		f = heap.newArray();
+		f = heap.newArray("");
 	}
 
 	@Before
