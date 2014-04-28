@@ -34,8 +34,8 @@ public final class UnknownObject extends HeapObject {
 	 * @param heap
 	 *            Heap this external object resides on. Must not be null.
 	 */
-	public UnknownObject(UnknownObject external, Heap heap) {
-		super(external, heap);
+	public UnknownObject(HeapObject object, Heap heap) {
+		super(object, heap);
 	}
 
 	@Override

@@ -107,6 +107,16 @@ public class Heap {
 		return newClassInstance(ClassHelper.isImmutable(type), type);
 	}
 
+	public UnknownObject newUnknownObject(boolean immutable, String type) {
+		UnknownObject object = new UnknownObject(this, immutable, type);
+		objects.put(object.getId(), object);
+		return object;
+	}
+
+	public UnknownObject newUnknownObjectOfStaticType(Type type) {
+		return newUnknownObject(ClassHelper.isImmutableAndFinal(type), type.getSignature());
+	}
+
 	/**
 	 * Creates a new array and registers it in the heap.
 	 * 
@@ -118,51 +128,27 @@ public class Heap {
 		return object;
 	}
 
-	// /**
-	// * Publishes all objects that belong to this complex object. The published
-	// * objects are replaced by the external object in all referred links,
-	// * removed from this heap's set of regular objects, and added to the list
-	// of
-	// * this heap's published objects.
-	// *
-	// * @param obj
-	// * The entry to this complex object to be published
-	// */
-	// public void publish(HeapObject obj) {
-	// if (obj == null)
-	// return;
-	//
-	// if (obj.equals(getThisInstance()) || obj.isExternal())
-	// // don't publish this in order not to cover further bugs
-	// // don't publish the external object
-	// return;
-	//
-	// for (HeapObject o : obj.getClosure()) {
-	// if (!o.equals(getThisInstance()) && !o.isExternal()) {
-	// // don't publish this in order not to cover further bugs
-	// // don't publish the external object
-	//
-	// List<HeapObject> referring = new Vector<HeapObject>();
-	//
-	// for (HeapObject referringObj : o.getReferringObjects()) {
-	// if (!referringObj.isExternal())
-	// referring.add(referringObj);
-	// }
-	//
-	// for (int i = 0; i < referring.size(); i++) {
-	// referring.get(i).replaceReferredObject(o,
-	// getExternalObject(o.isImmutable()));
-	// }
-	//
-	// if (o.isImmutable())
-	// publishedImmutableObjects.add(o.getId());
-	// else
-	// publishedMutableObjects.add(o.getId());
-	//
-	// objects.remove(o.getId());
-	// }
-	// }
-	// }
+	/**
+	 * Publishes all objects that belong to this complex object. The published
+	 * objects are replaced by the external object in all referred links,
+	 * removed from this heap's set of regular objects, and added to the list of
+	 * this heap's published objects.
+	 * 
+	 * @param obj
+	 *            The entry to this complex object to be published
+	 */
+	public void publish(HeapObject obj) {
+		if (obj == null)
+			return;
+
+		if (obj.equals(getThisInstance()) || obj.isExternal())
+			// don't publish this in order not to cover further bugs
+			// don't publish the external object
+			return;
+
+		for (HeapObject o : obj.getClosure())
+			objects.put(o.getId(), new UnknownObject(o, this));
+	}
 
 	@Override
 	public int hashCode() {
