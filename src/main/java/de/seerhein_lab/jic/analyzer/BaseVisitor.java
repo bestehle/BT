@@ -68,6 +68,7 @@ import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.HeapObject;
 import de.seerhein_lab.jic.vm.PC;
 import de.seerhein_lab.jic.vm.ReferenceSlot;
+import de.seerhein_lab.jic.vm.UnknownObject;
 import edu.umd.cs.findbugs.BugCollection;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.SortedBugCollection;
@@ -391,8 +392,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		// return external reference if returnType reference is expected
 		if (returnValue instanceof ReferenceSlot)
-			returnValue = ReferenceSlot.getExternalReference(heap,
-					ClassHelper.isImmutableAndFinal(obj.getReturnType(constantPoolGen)));
+			returnValue = new ReferenceSlot(heap.newUnknownObjectOfStaticType(obj
+					.getReturnType(constantPoolGen)));
 
 		// works also for void results, because number of required slots = 0
 		frame.getStack().pushByRequiredSize(returnValue);
@@ -635,8 +636,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			return;
 		}
 
-		if (arrayReference.getObject(heap) instanceof ExternalObject) {
-			frame.getStack().push(ReferenceSlot.getExternalReference(heap, false));
+		if (arrayReference.getObject(heap) instanceof UnknownObject) {
+			frame.getStack().push(
+					new ReferenceSlot(heap.newUnknownObjectOfStaticType(obj
+							.getType(constantPoolGen))));
 			pc.advance();
 			return;
 		}
@@ -697,7 +700,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if (!valueRef.isNullReference()) {
 			HeapObject array = arrayReference.getObject(heap);
 
-			if (array instanceof ExternalObject)
+			if (array instanceof UnknownObject)
 				heap.publish(valueRef.getObject(heap));
 			else
 				((Array) array).addReferredObject(valueRef.getObject(heap));
@@ -960,10 +963,10 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		Slot f = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
 		if (f instanceof ReferenceSlot) {
-			if (o.getObject(heap) instanceof ExternalObject) {
+			if (o.getObject(heap) instanceof UnknownObject) {
 				// if left side is external return external
-				f = ReferenceSlot.getExternalReference(heap,
-						ClassHelper.isImmutableAndFinal(obj.getFieldType(constantPoolGen)));
+				f = new ReferenceSlot(heap.newUnknownObjectOfStaticType(obj
+						.getFieldType(constantPoolGen)));
 			} else {
 				// get the HeapObject linked to the desired field
 				HeapObject referredByF = ((ClassInstance) o.getObject(heap)).getField(obj
@@ -1004,8 +1007,8 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		if (f instanceof ReferenceSlot) {
 			// static values are always external
-			f = ReferenceSlot.getExternalReference(heap,
-					ClassHelper.isImmutableAndFinal(obj.getFieldType(constantPoolGen)));
+			f = new ReferenceSlot(heap.newUnknownObjectOfStaticType(obj
+					.getFieldType(constantPoolGen)));
 		}
 
 		log.append((f instanceof DoubleSlot || f instanceof LongSlot) ? f + ", " + f : f);
@@ -1049,7 +1052,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		if (vRef instanceof ReferenceSlot) {
 			v = ((ReferenceSlot) vRef).getObject(heap);
 
-			if (o instanceof ExternalObject)
+			if (o instanceof UnknownObject)
 				heap.publish(v);
 			else
 				((ClassInstance) o).setField(obj.getFieldName(constantPoolGen), v);
