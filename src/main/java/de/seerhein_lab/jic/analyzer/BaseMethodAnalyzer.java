@@ -79,6 +79,7 @@ public abstract class BaseMethodAnalyzer {
 		OpStack callerStack = new OpStack();
 		Heap callerHeap = getHeap();
 		callerStack.push(ReferenceSlot.getThisReference(callerHeap));
+		// TODO this = Unknown ???
 
 		return analyze(callerStack, 0, callerHeap);
 	}
@@ -100,9 +101,9 @@ public abstract class BaseMethodAnalyzer {
 		OpStack clonedStack = new OpStack(callerStack);
 
 		return analyze(
-				callerStack.push(ReferenceSlot.getExternalReference(heap,
-						ClassHelper.isImmutableAndFinal(arguments[index]))), index + 1, heap)
-				.merge(analyze(clonedStack.push(ReferenceSlot.getNullReference()), index + 1, heap));
+				callerStack.push(new ReferenceSlot(heap
+						.newUnknownObjectOfStaticType(arguments[index]))), index + 1, heap).merge(
+				analyze(clonedStack.push(ReferenceSlot.getNullReference()), index + 1, heap));
 
 	}
 
