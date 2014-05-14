@@ -24,10 +24,10 @@ public class Heap {
 	private final UUID thisID;
 
 	/**
-	 * Constructor. Creates the 'this' instance and the external object.
+	 * Constructor. Creates the 'this' instance.
 	 */
 	public Heap(String type) {
-		HeapObject thisObject = new ClassInstance(this, ClassHelper.isImmutable(type), type);
+		HeapObject thisObject = new UnknownObject(this, ClassHelper.isImmutable(type), type);
 		thisID = thisObject.getId();
 		objects.put(thisID, thisObject);
 
@@ -77,8 +77,8 @@ public class Heap {
 	 * 
 	 * @return this heap's 'this' instance
 	 */
-	public ClassInstance getThisInstance() {
-		return (ClassInstance) get(thisID);
+	public UnknownObject getThisInstance() {
+		return (UnknownObject) get(thisID);
 	}
 
 	/**
@@ -141,9 +141,8 @@ public class Heap {
 		if (obj == null)
 			return;
 
-		if (obj.equals(getThisInstance()) || obj.isExternal())
+		if (obj.equals(getThisInstance()))
 			// don't publish this in order not to cover further bugs
-			// don't publish the external object
 			return;
 
 		for (HeapObject o : obj.getClosure())
