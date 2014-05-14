@@ -14,7 +14,6 @@ import de.seerhein_lab.jic.analyzer.QualifiedMethod;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.cache.AnalysisCache.Check;
 import de.seerhein_lab.jic.slot.Slot;
-import de.seerhein_lab.jic.vm.ClassInstance;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.HeapObject;
@@ -68,10 +67,10 @@ public class ConfinementVisitor extends BaseVisitor {
 
 		if (targetObject.equals(heap.getThisInstance()))
 
-			((ClassInstance) value).setStackConfined(false);
+			value.setStackConfinement(targetObject);
 
 		for (HeapObject referred : value.getReferredObjects()) {
-			((ClassInstance) referred).setStackConfined(false);
+			referred.setStackConfinement(targetObject);
 		}
 	}
 

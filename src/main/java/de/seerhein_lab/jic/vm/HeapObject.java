@@ -20,12 +20,14 @@ import de.seerhein_lab.jic.EmercencyBrakeException;
  */
 public abstract class HeapObject {
 	private final static int HEAP_EMERCENCY_BREAK = 200000;
+
 	public static long objects = 0;
 	private final UUID id;
 	protected final Set<UUID> referredBy = new HashSet<UUID>();
 	public final Heap heap;
 	private final boolean immutable;
 
+	private HeapObject confinementDependency = null;
 	private boolean stackConfined = true;
 	private String type;
 
@@ -76,10 +78,6 @@ public abstract class HeapObject {
 
 	public boolean isImmutable() {
 		return immutable;
-	}
-
-	public boolean isExternal() {
-		return false;
 	}
 
 	/**
@@ -271,11 +269,18 @@ public abstract class HeapObject {
 	protected abstract HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited);
 
 	public boolean isStackConfined() {
-		return stackConfined;
+		if (confinementDependency == null)
+			return stackConfined;
+		return confinementDependency.isStackConfined();
 	}
 
-	public void setStackConfined(boolean stackConfined) {
-		this.stackConfined = stackConfined;
+	public void setStackShared() {
+		this.stackConfined = false;
+		confinementDependency = null;
+	}
+
+	public void setStackConfinement(HeapObject dependency) {
+		confinementDependency = dependency;
 	}
 
 	public String getType() {
@@ -291,8 +296,8 @@ public abstract class HeapObject {
 	public String toString() {
 		if (this.equals(heap.getThisInstance()))
 			return "This";
-		if (this.isExternal())
-			return (immutable ? "immutable" : "mutable") + "External";
+		if (this instanceof UnknownObject)
+			return (immutable ? "immutable" : "mutable") + "UnknownObject";
 		return (immutable ? "immutable" : "mutable") + "Internal ("
 				+ String.valueOf(id).substring(0, 13) + ")";
 	}

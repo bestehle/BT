@@ -38,11 +38,6 @@ public final class UnknownObject extends HeapObject {
 		super(object, heap);
 	}
 
-	@Override
-	public boolean isExternal() {
-		return true;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -105,6 +100,12 @@ public final class UnknownObject extends HeapObject {
 			}
 
 		};
+	}
+
+	@Override
+	public boolean isStackConfined() {
+		throw new AssertionError("UnknownObject StackConfinement");
+		//TODO
 	}
 
 	/*

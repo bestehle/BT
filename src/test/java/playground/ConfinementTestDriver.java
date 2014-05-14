@@ -4,6 +4,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,17 +16,20 @@ import org.apache.bcel.generic.MethodGen;
 import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.CallGraphHelper;
 import de.seerhein_lab.jic.Class;
+import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.QualifiedMethod;
 import de.seerhein_lab.jic.analyzer.confinement.ConfinementAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
+import de.seerhein_lab.jic.vm.HeapObject;
 import edu.umd.cs.findbugs.SortedBugCollection;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class ConfinementTestDriver {
 	private static final String LOGFILEPATH = "log.txt";
 	private static Logger logger;
+	private static Set<EvaluationResult> results;
 
 	public static void main(String[] args) throws ClassNotFoundException, SecurityException,
 			IOException {
@@ -33,6 +37,11 @@ public class ConfinementTestDriver {
 		logger = Utils.setUpLogger("ConfinementTestDriver", LOGFILEPATH, Level.ALL);
 
 		JavaClass clazz = Repository.lookupClass("concurrent.StackConfinement");
+
+		for (Package p : Package.getPackages()) {
+			logger.severe(p.getName());
+			//TODO
+		}
 
 		SortedBugCollection bugs = new SortedBugCollection();
 
@@ -56,6 +65,14 @@ public class ConfinementTestDriver {
 
 			AnalysisResult result = methodAnalyzer.analyze();
 			bugs.addAll(result.getBugs());
+			results = result.getResults();
+		}
+
+		for (EvaluationResult result : results) {
+			for (HeapObject object : result.getHeap().getObjects()) {
+
+			}
+			; // TODO
 		}
 
 		// logger.log(Level.SEVERE, "bugs: ");
