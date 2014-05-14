@@ -1,8 +1,5 @@
 package de.seerhein_lab.jic.analyzer;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,9 +18,6 @@ import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.analyzer.confinement.ConfinementAnalyzer;
-import de.seerhein_lab.jic.analyzer.propCon.PropConAnalyzer;
-import de.seerhein_lab.jic.analyzer.unmod.ctor.CtorUnmodifiableAnalyzer;
-import de.seerhein_lab.jic.analyzer.unmod.method.MethodUnmodifiableAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.vm.Heap;
 import edu.umd.cs.findbugs.BugCollection;
@@ -75,68 +69,74 @@ public final class ClassAnalyzer {
 		return bugs.getCollection();
 	}
 
-	public synchronized Collection<BugInstance> properlyConstructed() {
-		SortedBugCollection bugs = new SortedBugCollection();
-
-		for (Method ctor : classHelper.getConstructors()) {
-			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(), new ConstantPoolGen(
-					clazz.getConstantPool()));
-
-			BaseMethodAnalyzer ctorAnalyzer = new PropConAnalyzer(classContext, ctorGen, cache, 0);
-			// ctorAnalyzer.analyze();
-			// bugs.addAll(ctorAnalyzer.getBugs());
-
-			bugs.addAll(ctorAnalyzer.analyze().getBugs());
-		}
-		return bugs.getCollection();
-	}
-
-	// package private for testing purposes
-	Collection<BugInstance> ctorsUnmodifiable() {
-		SortedBugCollection bugs = new SortedBugCollection();
-
-		for (Method ctor : classHelper.getConstructors()) {
-			MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(), new ConstantPoolGen(
-					clazz.getConstantPool()));
-
-			AnalysisResult analysisResult = new CtorUnmodifiableAnalyzer(classContext, ctorGen,
-					cache, 0).analyze();
-			bugs.addAll(analysisResult.getBugs());
-
-			if (analysisResult.getBugs().isEmpty()) {
-				for (EvaluationResult result : analysisResult.getResults())
-					heaps.add(result.getHeap());
-			}
-		}
-		return bugs.getCollection();
-	}
+	// public synchronized Collection<BugInstance> properlyConstructed() {
+	// SortedBugCollection bugs = new SortedBugCollection();
+	//
+	// for (Method ctor : classHelper.getConstructors()) {
+	// MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(), new
+	// ConstantPoolGen(
+	// clazz.getConstantPool()));
+	//
+	// BaseMethodAnalyzer ctorAnalyzer = new PropConAnalyzer(classContext,
+	// ctorGen, cache, 0);
+	// // ctorAnalyzer.analyze();
+	// // bugs.addAll(ctorAnalyzer.getBugs());
+	//
+	// bugs.addAll(ctorAnalyzer.analyze().getBugs());
+	// }
+	// return bugs.getCollection();
+	// }
 
 	// package private for testing purposes
-	Collection<BugInstance> methodsUnmodifiable() {
-		SortedBugCollection bugs = new SortedBugCollection();
+	// Collection<BugInstance> ctorsUnmodifiable() {
+	// SortedBugCollection bugs = new SortedBugCollection();
+	//
+	// for (Method ctor : classHelper.getConstructors()) {
+	// MethodGen ctorGen = new MethodGen(ctor, clazz.getClassName(), new
+	// ConstantPoolGen(
+	// clazz.getConstantPool()));
+	//
+	// AnalysisResult analysisResult = new
+	// CtorUnmodifiableAnalyzer(classContext, ctorGen,
+	// cache, 0).analyze();
+	// bugs.addAll(analysisResult.getBugs());
+	//
+	// if (analysisResult.getBugs().isEmpty()) {
+	// for (EvaluationResult result : analysisResult.getResults())
+	// heaps.add(result.getHeap());
+	// }
+	// }
+	// return bugs.getCollection();
+	// }
 
-		for (Method method : classHelper.getConcreteNonPrivateNonStaticMethods()) {
-			if (method.isNative()) {
-				bugs.add(Utils
-						.createBug(
-								"IMMUTABILITY_BUG",
-								Confidence.MEDIUM,
-								"Native method might modify 'this' object or publish mutable reference fields of 'this' object",
-								classContext.getJavaClass()));
-				continue;
-			}
-
-			for (Heap heap : heaps) {
-				MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
-						new ConstantPoolGen(clazz.getConstantPool()));
-
-				BaseMethodAnalyzer methodAnalyzer = new MethodUnmodifiableAnalyzer(classContext,
-						methodGen, new Heap(heap), cache, 0);
-				bugs.addAll(methodAnalyzer.analyze().getBugs());
-			}
-		}
-		return bugs.getCollection();
-	}
+	// package private for testing purposes
+	// Collection<BugInstance> methodsUnmodifiable() {
+	// SortedBugCollection bugs = new SortedBugCollection();
+	//
+	// for (Method method : classHelper.getConcreteNonPrivateNonStaticMethods())
+	// {
+	// if (method.isNative()) {
+	// bugs.add(Utils
+	// .createBug(
+	// "IMMUTABILITY_BUG",
+	// Confidence.MEDIUM,
+	// "Native method might modify 'this' object or publish mutable reference fields of 'this' object",
+	// classContext.getJavaClass()));
+	// continue;
+	// }
+	//
+	// for (Heap heap : heaps) {
+	// MethodGen methodGen = new MethodGen(method, clazz.getClassName(),
+	// new ConstantPoolGen(clazz.getConstantPool()));
+	//
+	// BaseMethodAnalyzer methodAnalyzer = new
+	// MethodUnmodifiableAnalyzer(classContext,
+	// methodGen, new Heap(heap), cache, 0);
+	// bugs.addAll(methodAnalyzer.analyze().getBugs());
+	// }
+	// }
+	// return bugs.getCollection();
+	// }
 
 	public Collection<BugInstance> isStackConfined() {
 		SortedBugCollection bugs = new SortedBugCollection();
@@ -161,48 +161,49 @@ public final class ClassAnalyzer {
 		return bugs.getCollection();
 	}
 
-	private Collection<BugInstance> stateUnmodifiable() {
-		SortedBugCollection bugs = new SortedBugCollection();
-		bugs.addAll(referencesToMutableDataPrivate());
-		bugs.addAll(ctorsUnmodifiable());
-		bugs.addAll(methodsUnmodifiable());
-		return bugs.getCollection();
-	}
+	// private Collection<BugInstance> stateUnmodifiable() {
+	// SortedBugCollection bugs = new SortedBugCollection();
+	// bugs.addAll(referencesToMutableDataPrivate());
+	// bugs.addAll(ctorsUnmodifiable());
+	// bugs.addAll(methodsUnmodifiable());
+	// return bugs.getCollection();
+	// }
 
-	private Collection<BugInstance> superClassImmutable() {
-		ClassContext superContext;
-		try {
-			final JavaClass superClass = clazz.getSuperClass();
-			logger.info("class: " + clazz.getClassName() + ", super class: "
-					+ superClass.getClassName());
+	// private Collection<BugInstance> superClassImmutable() {
+	// ClassContext superContext;
+	// try {
+	// final JavaClass superClass = clazz.getSuperClass();
+	// logger.info("class: " + clazz.getClassName() + ", super class: "
+	// + superClass.getClassName());
+	//
+	// superContext = mock(ClassContext.class);
+	// when(superContext.getJavaClass()).thenReturn(superClass);
+	//
+	// } catch (ClassNotFoundException e) {
+	// throw new RuntimeException(e);
+	// }
+	//
+	// ClassAnalyzer superAnalyzer = new ClassAnalyzer(superContext, new
+	// AnalysisCache());
+	//
+	// return superAnalyzer.isImmutable();
+	//
+	// }
 
-			superContext = mock(ClassContext.class);
-			when(superContext.getJavaClass()).thenReturn(superClass);
-
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-		}
-
-		ClassAnalyzer superAnalyzer = new ClassAnalyzer(superContext, new AnalysisCache());
-
-		return superAnalyzer.isImmutable();
-
-	}
-
-	public synchronized Collection<BugInstance> isImmutable() {
-		SortedBugCollection bugs = new SortedBugCollection();
-
-		if (clazz.getClassName().equals("java.lang.Object"))
-			return bugs.getCollection();
-
-		if (!superClassImmutable().isEmpty())
-			bugs.add(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH,
-					"mutable superclass renders this class mutable, too.",
-					classContext.getJavaClass()));
-
-		bugs.addAll(allFieldsFinal());
-		bugs.addAll(properlyConstructed());
-		bugs.addAll(stateUnmodifiable());
-		return bugs.getCollection();
-	}
+	// public synchronized Collection<BugInstance> isImmutable() {
+	// SortedBugCollection bugs = new SortedBugCollection();
+	//
+	// if (clazz.getClassName().equals("java.lang.Object"))
+	// return bugs.getCollection();
+	//
+	// if (!superClassImmutable().isEmpty())
+	// bugs.add(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH,
+	// "mutable superclass renders this class mutable, too.",
+	// classContext.getJavaClass()));
+	//
+	// bugs.addAll(allFieldsFinal());
+	// bugs.addAll(properlyConstructed());
+	// bugs.addAll(stateUnmodifiable());
+	// return bugs.getCollection();
+	// }
 }
