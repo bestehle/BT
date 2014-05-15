@@ -8,6 +8,7 @@ import net.jcip.annotations.ThreadSafe;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
+import de.seerhein_lab.jic.Class;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
@@ -21,26 +22,28 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 @ThreadSafe
 // Superclass is thread-safe, this sub-class doesn't add any public methods
 public final class ConfinementAnalyzer extends BaseMethodAnalyzer {
+	private Class classToAnalyze;
 
 	public ConfinementAnalyzer(ClassContext classContext, MethodGen methodGen, AnalysisCache cache,
-			int methodInvocationDepth) {
+			int methodInvocationDepth, Class classToAnalyze) {
 		this(classContext, methodGen, new HashSet<QualifiedMethod>(), -1, cache,
-				methodInvocationDepth);
+				methodInvocationDepth, classToAnalyze);
 		alreadyVisitedMethods.add(new QualifiedMethod(classContext.getJavaClass(), methodGen
 				.getMethod()));
 	}
 
 	public ConfinementAnalyzer(ClassContext classContext, MethodGen methodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache,
-			int methodInvocationDepth) {
+			int methodInvocationDepth, Class classToAnalyze) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth, cache, methodInvocationDepth);
+		this.classToAnalyze = classToAnalyze;
 	}
 
 	protected BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
-		return new ConfinementVisitor(classContext, methodGen, frame, heap,
+		return new StackConfinementVisitor(classContext, methodGen, frame, heap,
 				methodGen.getConstantPool(), pc, exceptionHandlers, alreadyVisitedMethods, depth,
-				alreadyVisitedIfBranch, cache, methodInvocationDepth);
+				alreadyVisitedIfBranch, cache, methodInvocationDepth, classToAnalyze);
 	}
 
 	@Override

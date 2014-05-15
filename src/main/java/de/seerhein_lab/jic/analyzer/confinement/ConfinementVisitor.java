@@ -7,6 +7,9 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
+import de.seerhein_lab.jic.AnalysisResult;
+import de.seerhein_lab.jic.Class;
+import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
@@ -22,14 +25,16 @@ import de.seerhein_lab.jic.vm.ReferenceSlot;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class ConfinementVisitor extends BaseVisitor {
+	private Class classToAnalyze;
 
 	protected ConfinementVisitor(ClassContext classContext, MethodGen methodGen, Frame frame,
 			Heap heap, ConstantPoolGen constantPoolGen, PC pc,
 			CodeExceptionGen[] exceptionHandlers, Set<QualifiedMethod> alreadyVisitedMethods,
 			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-			AnalysisCache cache, int methodInvocationDepth) {
+			AnalysisCache cache, int methodInvocationDepth, Class classToAnalyze) {
 		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
 				alreadyVisitedMethods, pc, exceptionHandlers, depth, cache, methodInvocationDepth);
+		this.classToAnalyze = classToAnalyze;
 	}
 
 	@Override
@@ -41,7 +46,7 @@ public class ConfinementVisitor extends BaseVisitor {
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int methodInvocationDepth) {
 		return new ConfinementAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods, depth,
-				cache, methodInvocationDepth);
+				cache, methodInvocationDepth, classToAnalyze);
 	}
 
 	// ******************************************************************//
@@ -63,15 +68,39 @@ public class ConfinementVisitor extends BaseVisitor {
 
 		HeapObject value = ((ReferenceSlot) valueToPut).getObject(heap);
 
+		if (!value.getType().equals(classToAnalyze.getName()))
+			return;
+
 		HeapObject targetObject = targetReference.getObject(heap);
 
-		if (targetObject.equals(heap.getThisInstance()))
+		Set<QualifiedMethod> methods = Class.getClass(methodGen.getClassName())
+				.getMethod(methodGen.getMethod().getName())
+				.getCallingMethodsWithInstantiation(Class.getClass(targetObject.getType()));
 
-			value.setStackConfinement(targetObject);
+		for (QualifiedMethod method : methods) {
 
-		for (HeapObject referred : value.getReferredObjects()) {
-			referred.setStackConfinement(targetObject);
+			MethodGen targetMethodGen = new MethodGen(method.getMethod(), method.getJavaClass()
+					.getClassName(), new ConstantPoolGen(method.getJavaClass().getConstantPool()));
+
+			BaseMethodAnalyzer methodAnalyzer = new ConfinementAnalyzer(classContext,
+					targetMethodGen, cache, 0, Class.getClass(targetObject.getType()));
+
+			AnalysisResult results = methodAnalyzer.analyze();
+
+			for (EvaluationResult result : results.getResults()) {
+				for (HeapObject object : result.getHeap().getObjects()) {
+					object.getType().equals(anObject)
+				}
+			}
+
 		}
+		// if (targetObject.equals(heap.getThisInstance()))
+		//
+		// value.setStackConfinement(targetObject);
+		//
+		// for (HeapObject referred : value.getReferredObjects()) {
+		// referred.setStackConfinement(targetObject);
+		// }
 	}
 
 	@Override
