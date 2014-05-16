@@ -40,7 +40,7 @@ public class ConfinementTestDriver {
 
 		for (Package p : Package.getPackages()) {
 			logger.severe(p.getName());
-			//TODO
+			// TODO
 		}
 
 		SortedBugCollection bugs = new SortedBugCollection();
@@ -61,7 +61,7 @@ public class ConfinementTestDriver {
 					.getClassName(), new ConstantPoolGen(method.getJavaClass().getConstantPool()));
 
 			BaseMethodAnalyzer methodAnalyzer = new ConfinementAnalyzer(classContextMock,
-					methodGen, analysisCache, 0);
+					methodGen, analysisCache, 0, classToAnalyze);
 
 			AnalysisResult result = methodAnalyzer.analyze();
 			bugs.addAll(result.getBugs());

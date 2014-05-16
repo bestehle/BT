@@ -36,4 +36,8 @@ public class StackConfinement {
 		StackConfinement.field = anotherClass;
 	}
 
+	public void method6() {
+		StackConfinement.field = new AnotherClass();
+	}
+
 }

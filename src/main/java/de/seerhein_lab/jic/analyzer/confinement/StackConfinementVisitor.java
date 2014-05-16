@@ -92,6 +92,7 @@ public class StackConfinementVisitor extends BaseVisitor {
 
 		if (!value.getType().equals(classToAnalyze.getName()))
 			return;
+		// TODO Lconcurrent/AnotherClass; == concurrent.AnotherClass
 
 		System.out.println("StackConfinementBUG: " + value);
 	}
