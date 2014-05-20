@@ -294,7 +294,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		AnalysisResult methodResult;
 
-		if (cache.isCacheable(targetMethod)) {
+		if (false && cache.isCacheable(targetMethod)) {
 			if (cache.contains(targetMethod) && cache.get(targetMethod).isCached(getCheck())) {
 				logger.fine(indentation + targetMethod
 						+ " already evaluated - taking result out of the cache");
