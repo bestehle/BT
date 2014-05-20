@@ -17,7 +17,7 @@ import org.apache.bcel.generic.MethodGen;
 import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Utils;
-import de.seerhein_lab.jic.analyzer.confinement.ConfinementAnalyzer;
+import de.seerhein_lab.jic.analyzer.confinement.StackConfinementAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.vm.Heap;
 import edu.umd.cs.findbugs.BugCollection;
@@ -145,8 +145,8 @@ public final class ClassAnalyzer {
 			MethodGen methodGen = new MethodGen(method, clazz.getClassName(), new ConstantPoolGen(
 					clazz.getConstantPool()));
 
-			BaseMethodAnalyzer methodAnalyzer = new ConfinementAnalyzer(classContext, methodGen,
-					cache, 0);
+			BaseMethodAnalyzer methodAnalyzer = new StackConfinementAnalyzer(classContext,
+					methodGen, cache, 0, null);
 
 			AnalysisResult result = methodAnalyzer.analyze();
 			bugs.addAll(result.getBugs());

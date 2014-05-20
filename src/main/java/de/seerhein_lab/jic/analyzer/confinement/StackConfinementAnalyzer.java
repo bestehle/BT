@@ -21,10 +21,10 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 
 @ThreadSafe
 // Superclass is thread-safe, this sub-class doesn't add any public methods
-public final class ConfinementAnalyzer extends BaseMethodAnalyzer {
+public final class StackConfinementAnalyzer extends BaseMethodAnalyzer {
 	private Class classToAnalyze;
 
-	public ConfinementAnalyzer(ClassContext classContext, MethodGen methodGen, AnalysisCache cache,
+	public StackConfinementAnalyzer(ClassContext classContext, MethodGen methodGen, AnalysisCache cache,
 			int methodInvocationDepth, Class classToAnalyze) {
 		this(classContext, methodGen, new HashSet<QualifiedMethod>(), -1, cache,
 				methodInvocationDepth, classToAnalyze);
@@ -32,7 +32,7 @@ public final class ConfinementAnalyzer extends BaseMethodAnalyzer {
 				.getMethod()));
 	}
 
-	public ConfinementAnalyzer(ClassContext classContext, MethodGen methodGen,
+	public StackConfinementAnalyzer(ClassContext classContext, MethodGen methodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache,
 			int methodInvocationDepth, Class classToAnalyze) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth, cache, methodInvocationDepth);
@@ -41,7 +41,7 @@ public final class ConfinementAnalyzer extends BaseMethodAnalyzer {
 
 	protected BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc,
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
-		return new ConfinementVisitor(classContext, methodGen, frame, heap,
+		return new StackConfinementVisitor(classContext, methodGen, frame, heap,
 				methodGen.getConstantPool(), pc, exceptionHandlers, alreadyVisitedMethods, depth,
 				alreadyVisitedIfBranch, cache, methodInvocationDepth, classToAnalyze);
 	}

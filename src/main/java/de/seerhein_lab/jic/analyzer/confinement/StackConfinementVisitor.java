@@ -20,6 +20,7 @@ import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.HeapObject;
 import de.seerhein_lab.jic.vm.PC;
 import de.seerhein_lab.jic.vm.ReferenceSlot;
+import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class StackConfinementVisitor extends BaseVisitor {
@@ -66,35 +67,30 @@ public class StackConfinementVisitor extends BaseVisitor {
 
 		HeapObject value = ((ReferenceSlot) valueToPut).getObject(heap);
 
-		if (!value.getType().equals(classToAnalyze.getName()))
+		if (classToAnalyze != null && !value.getType().equals(classToAnalyze.getName()))
 			return;
 
-		HeapObject targetObject = targetReference.getObject(heap);
+		logger.warning("StackConfinementBUG: " + value);
+		addBug("STACK_CONFINEMENT_BUG", Confidence.HIGH,
+				"instance is assigned to an object -> not stack confined",
+				pc.getCurrentInstruction());
 
-		if (!targetObject.isStackConfined())
-			System.out.println("StackConfinementBUG: " + value);
-
-		// if (targetObject.equals(heap.getThisInstance()))
-		//
-		// value.setStackConfinement(targetObject);
-		//
-		// for (HeapObject referred : value.getReferredObjects()) {
-		// referred.setStackConfinement(targetObject);
-		// }
 	}
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
-		if (!(referenceToPut instanceof ReferenceSlot))
+		if (referenceToPut.isNullReference())
 			return;
 
 		HeapObject value = ((ReferenceSlot) referenceToPut).getObject(heap);
 
-		if (!value.getType().equals(classToAnalyze.getName()))
+		if (classToAnalyze != null && !value.getType().equals(classToAnalyze.getName()))
 			return;
-		// TODO Lconcurrent/AnotherClass; == concurrent.AnotherClass
 
-		System.out.println("StackConfinementBUG: " + value);
+		logger.warning("StackConfinementBUG: " + value);
+		addBug("STACK_CONFINEMENT_BUG", Confidence.HIGH,
+				"instance is assigned to a static field -> not stack confined",
+				pc.getCurrentInstruction());
 	}
 
 	@Override

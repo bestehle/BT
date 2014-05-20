@@ -20,7 +20,7 @@ import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.QualifiedMethod;
-import de.seerhein_lab.jic.analyzer.confinement.ConfinementAnalyzer;
+import de.seerhein_lab.jic.analyzer.confinement.StackConfinementAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.vm.HeapObject;
 import edu.umd.cs.findbugs.SortedBugCollection;
@@ -60,7 +60,7 @@ public class ConfinementTestDriver {
 			MethodGen methodGen = new MethodGen(method.getMethod(), method.getJavaClass()
 					.getClassName(), new ConstantPoolGen(method.getJavaClass().getConstantPool()));
 
-			BaseMethodAnalyzer methodAnalyzer = new ConfinementAnalyzer(classContextMock,
+			BaseMethodAnalyzer methodAnalyzer = new StackConfinementAnalyzer(classContextMock,
 					methodGen, analysisCache, 0, classToAnalyze);
 
 			AnalysisResult result = methodAnalyzer.analyze();
