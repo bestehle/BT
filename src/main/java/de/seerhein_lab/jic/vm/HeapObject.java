@@ -74,6 +74,9 @@ public abstract class HeapObject {
 		referredBy.addAll(original.referredBy);
 		this.immutable = original.immutable;
 		this.heap = heap;
+		this.confinementDependency = original.confinementDependency;
+		this.stackConfined = original.stackConfined;
+		this.type = original.type;
 	}
 
 	public boolean isImmutable() {
