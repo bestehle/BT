@@ -699,6 +699,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		if (!valueRef.isNullReference()) {
 			HeapObject array = arrayReference.getObject(heap);
+			logger.fine(indentation + "\t " + array + "[] <-- " + valueRef.getObject(heap));
 
 			if (array instanceof UnknownObject)
 				heap.publish(valueRef.getObject(heap));
@@ -891,15 +892,15 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	 */
 	@Override
 	public void visitANEWARRAY(ANEWARRAY obj) {
-		logger.fine(indentation + obj.toString(false));
 
 		// pops length,
 		frame.getStack().pop();
 
 		// pushes new array reference
-		frame.getStack().push(
-				new ReferenceSlot(heap.newArray(obj.getLoadClassType(constantPoolGen)
-						.getSignature())));
+		Array newArray = heap.newArray(obj.getLoadClassType(constantPoolGen).getSignature());
+		logger.fine(indentation + obj.toString(false) + " (" + newArray + ")");
+
+		frame.getStack().push(new ReferenceSlot(newArray));
 
 		pc.advance();
 	}
