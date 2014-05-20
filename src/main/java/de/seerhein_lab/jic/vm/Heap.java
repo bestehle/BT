@@ -96,11 +96,11 @@ public class Heap {
 	}
 
 	public ClassInstance newClassInstanceOfDynamicType(Type type) {
-		return newClassInstance(ClassHelper.isImmutable(type), type.getSignature());
+		return newClassInstance(ClassHelper.isImmutable(type), type.toString());
 	}
 
 	public ClassInstance newClassInstanceOfStaticType(Type type) {
-		return newClassInstance(ClassHelper.isImmutableAndFinal(type), type.getSignature());
+		return newClassInstance(ClassHelper.isImmutableAndFinal(type), type.toString());
 	}
 
 	public ClassInstance newClassInstanceOfDynamicType(String type) {
@@ -114,7 +114,7 @@ public class Heap {
 	}
 
 	public UnknownObject newUnknownObjectOfStaticType(Type type) {
-		return newUnknownObject(ClassHelper.isImmutableAndFinal(type), type.getSignature());
+		return newUnknownObject(ClassHelper.isImmutableAndFinal(type), type.toString());
 	}
 
 	/**
