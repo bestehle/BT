@@ -83,7 +83,7 @@ public class StackConfinementVisitor extends BaseVisitor {
 
 		HeapObject object = ((ReferenceSlot) value).getObject(heap);
 
-		if (object == null)
+		if (object == null || object instanceof UnknownObject)
 			return;
 
 		if (classToAnalyze != null && !object.getType().equals(classToAnalyze.getName()))
