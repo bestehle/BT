@@ -12,6 +12,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
@@ -64,6 +65,13 @@ public class ClassAnalyzerRunner extends Runner {
 				if (ignoreTest) {
 					notifier.fireTestIgnored(testDescription);
 				} else {
+					Logger.getLogger("ClassAnalyzerRunner")
+							.warning(
+									String.format(
+											"\n###############################################################################\n"
+													+ "#         %-50s                  #"
+													+ "\n###############################################################################\n",
+											classToTest.getSimpleName()));
 					runTest(notifier, testDescription, classToTest);
 				}
 			} catch (Throwable thrownException) {
