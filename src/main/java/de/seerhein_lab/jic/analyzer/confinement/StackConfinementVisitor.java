@@ -58,43 +58,40 @@ public class StackConfinementVisitor extends BaseVisitor {
 
 	@Override
 	protected void detectXAStoreBug(ReferenceSlot arrayReference, Slot valueToStore) {
+		detect(valueToStore);
 	}
 
 	@Override
 	protected void detectPutFieldBug(ReferenceSlot targetReference, Slot valueToPut) {
-		if (!(valueToPut instanceof ReferenceSlot))
-			return;
-
-		HeapObject value = ((ReferenceSlot) valueToPut).getObject(heap);
-
-		if (classToAnalyze != null && !value.getType().equals(classToAnalyze.getName()))
-			return;
-
-		logger.warning("StackConfinementBUG: " + value);
-		addBug("STACK_CONFINEMENT_BUG", Confidence.HIGH,
-				"instance is assigned to an object -> not stack confined",
-				pc.getCurrentInstruction());
-
+		detect(valueToPut);
 	}
 
 	@Override
 	protected void detectPutStaticBug(ReferenceSlot referenceToPut) {
-		if (referenceToPut.isNullReference())
-			return;
-
-		HeapObject value = ((ReferenceSlot) referenceToPut).getObject(heap);
-
-		if (classToAnalyze != null && !value.getType().equals(classToAnalyze.getName()))
-			return;
-
-		logger.warning("StackConfinementBUG: " + value);
-		addBug("STACK_CONFINEMENT_BUG", Confidence.HIGH,
-				"instance is assigned to a static field -> not stack confined",
-				pc.getCurrentInstruction());
+		detect(referenceToPut);
 	}
 
 	@Override
 	protected void detectAReturnBug(ReferenceSlot returnSlot) {
+		// TODO
+	}
+
+	private void detect(Slot value) {
+		if (!(value instanceof ReferenceSlot))
+			return;
+
+		HeapObject object = ((ReferenceSlot) value).getObject(heap);
+
+		if (object == null)
+			return;
+
+		if (classToAnalyze != null && !object.getType().equals(classToAnalyze.getName()))
+			return;
+
+		logger.warning("StackConfinementBUG: " + object);
+		addBug("STACK_CONFINEMENT_BUG", Confidence.HIGH,
+				"instance is assigned to an object -> not stack confined",
+				pc.getCurrentInstruction());
 	}
 
 }
