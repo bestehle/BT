@@ -4,6 +4,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
@@ -55,7 +56,32 @@ public class ConfinementTestDriver {
 
 		DetailedClass classToAnalyze = DetailedClass.getClass("concurrent.AnotherClass");
 
+		Set<AnalysisResult> analysisResults = analyzeMethods(classToAnalyze);
+
+		for (AnalysisResult analysisResult : analysisResults) {
+			bugs.addAll(analysisResult.getBugs());
+			results = analysisResult.getResults();
+		}
+
+		for (EvaluationResult result : results) {
+			for (HeapObject object : result.getHeap().getObjects()) {
+
+			}
+			; // TODO
+		}
+
+		// logger.log(Level.SEVERE, "bugs: ");
+		// for (BugInstance bug : bugs) {
+		// logger.log(Level.SEVERE, " " + bug.getType() + " (" +
+		// bug.getPriorityString() + ")");
+		// }
+		//
+		// logger.log(Level.SEVERE, "end bugs");
+	}
+
+	private static Set<AnalysisResult> analyzeMethods(DetailedClass classToAnalyze) {
 		AnalysisCache analysisCache = new AnalysisCache();
+		HashSet<AnalysisResult> results = new HashSet<AnalysisResult>();
 
 		Queue<QualifiedMethod> queue = new LinkedList<QualifiedMethod>(
 				classToAnalyze.getInstantiations());
@@ -79,24 +105,8 @@ public class ConfinementTestDriver {
 			BaseMethodAnalyzer methodAnalyzer = new StackConfinementAnalyzer(classContextMock,
 					methodGen, analysisCache, 0, classToAnalyze);
 
-			AnalysisResult result = methodAnalyzer.analyze();
-			bugs.addAll(result.getBugs());
-			results = result.getResults();
+			results.add(methodAnalyzer.analyze());
 		}
-
-		for (EvaluationResult result : results) {
-			for (HeapObject object : result.getHeap().getObjects()) {
-
-			}
-			; // TODO
-		}
-
-		// logger.log(Level.SEVERE, "bugs: ");
-		// for (BugInstance bug : bugs) {
-		// logger.log(Level.SEVERE, " " + bug.getType() + " (" +
-		// bug.getPriorityString() + ")");
-		// }
-		//
-		// logger.log(Level.SEVERE, "end bugs");
+		return results;
 	}
 }
