@@ -458,14 +458,17 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		logger.fine(indentation + obj.toString(false));
 		Slot returnType = Slot.getDefaultSlotInstance(obj.getType(constantPoolGen));
-		logger.finest(indentation + "\t" + returnType);
 
-		if (returnType instanceof VoidSlot)
+		if (returnType instanceof VoidSlot) {
 			result.add(new EvaluationResult(Kind.REGULAR, returnType, heap));
-		else {
+			logger.finest(indentation + "\t" + returnType);
+		} else {
 			Slot returnSlot = frame.getStack().popByRequiredSize();
-			if (returnType instanceof ReferenceSlot)
+			if (returnType instanceof ReferenceSlot) {
 				detectAReturnBug((ReferenceSlot) returnSlot);
+				logger.finest(indentation + "\t" + ((ReferenceSlot) returnSlot).getObject(heap));
+			} else
+				logger.finest(indentation + "\t" + returnSlot);
 			result.add(new EvaluationResult(Kind.REGULAR, returnSlot, heap));
 		}
 		pc.invalidate();
