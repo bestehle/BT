@@ -141,12 +141,14 @@ public class Heap {
 		if (obj == null)
 			return;
 
-		if (obj.equals(getThisInstance()))
-			// don't publish this in order not to cover further bugs
-			return;
+		// if (obj.equals(getThisInstance()))
+		// // don't publish this in order not to cover further bugs
+		// return;
 
-		for (HeapObject o : obj.getClosure())
-			objects.put(o.getId(), new UnknownObject(o, this));
+		for (HeapObject o : obj.getClosure()) {
+			if (!(o instanceof UnknownObject))
+				objects.put(o.getId(), new UnknownObject(o, this));
+		}
 	}
 
 	@Override
