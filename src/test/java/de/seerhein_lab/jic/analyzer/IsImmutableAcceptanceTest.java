@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import net.jcip.annotations.Immutable;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import de.seerhein_lab.jic.testutils.BugsExpected;
@@ -23,6 +24,7 @@ import edu.umd.cs.findbugs.BugInstance;
 // @Ignore("activate this test class when the method IsImmutable will be implemented.")
 @RunWith(ClassAnalyzerRunner.class)
 @SuppressWarnings("unused")
+@Ignore
 public class IsImmutableAcceptanceTest {
 
 	@BindAnalyzerMethod

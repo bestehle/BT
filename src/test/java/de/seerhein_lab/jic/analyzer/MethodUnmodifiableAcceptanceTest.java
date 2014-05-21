@@ -2,6 +2,7 @@ package de.seerhein_lab.jic.analyzer;
 
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import de.seerhein_lab.jic.testutils.BugsExpected;
@@ -18,6 +19,7 @@ import edu.umd.cs.findbugs.BugInstance;
  */
 @RunWith(ClassAnalyzerRunner.class)
 @SuppressWarnings("unused")
+@Ignore
 public class MethodUnmodifiableAcceptanceTest {
 	@BindAnalyzerMethod
 	public static Collection<BugInstance> bindClassAnalyzerToProperlyConstructed(

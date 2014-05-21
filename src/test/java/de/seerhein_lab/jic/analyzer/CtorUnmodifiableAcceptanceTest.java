@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import net.jcip.annotations.Immutable;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import de.seerhein_lab.jic.testutils.BugsExpected;
@@ -20,6 +21,7 @@ import edu.umd.cs.findbugs.BugInstance;
  */
 @RunWith(ClassAnalyzerRunner.class)
 @SuppressWarnings("unused")
+@Ignore
 public class CtorUnmodifiableAcceptanceTest {
 
 	@BindAnalyzerMethod
