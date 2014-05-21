@@ -18,7 +18,7 @@ public class CallGraphHelper {
 	private static final Logger logger = Logger.getLogger("CallGraphHelper");
 
 	public static void generateCallGraph(JavaClass jClazz) {
-		Class clazz = Class.getClass(jClazz);
+		DetailedClass clazz = DetailedClass.getClass(jClazz);
 
 		for (Method method : jClazz.getMethods()) {
 
@@ -39,13 +39,13 @@ public class CallGraphHelper {
 			for (InstructionHandle ih : instructions) {
 				if (ih.getInstruction() instanceof NEW) {
 					NEW newInstruction = (NEW) ih.getInstruction();
-					Class.getClass(newInstruction.getLoadClassType(constantPool).getClassName())
+					DetailedClass.getClass(newInstruction.getLoadClassType(constantPool).getClassName())
 							.addInstantiation(clazz.getMethod(method));
 
 					logger.severe("new: " + newInstruction.getLoadClassType(constantPool));
 				} else if (ih.getInstruction() instanceof InvokeInstruction) {
 					InvokeInstruction invokeInstruction = (InvokeInstruction) ih.getInstruction();
-					Class.getClass(invokeInstruction.getLoadClassType(constantPool).getClassName())
+					DetailedClass.getClass(invokeInstruction.getLoadClassType(constantPool).getClassName())
 							.getMethod(invokeInstruction.getMethodName(constantPool))
 							.addCallingMethod(clazz.getMethod(method));
 
@@ -62,7 +62,7 @@ public class CallGraphHelper {
 	public static void printCallGraph() {
 		logger.severe("Ergebnis:\n");
 
-		for (Class clazz : Class.getClasses()) {
+		for (DetailedClass clazz : DetailedClass.getClasses()) {
 			logger.severe(clazz.getName());
 			logger.severe("\tInstanzierungen: " + clazz.getInstantiations());
 			for (QualifiedMethod method : clazz.getMethods().values()) {

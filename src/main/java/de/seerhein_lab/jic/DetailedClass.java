@@ -12,29 +12,29 @@ import org.apache.bcel.classfile.Method;
 
 import de.seerhein_lab.jic.analyzer.QualifiedMethod;
 
-public class Class {
-	private final static Map<String, Class> classes = new HashMap<String, Class>();
+public class DetailedClass {
+	private final static Map<String, DetailedClass> classes = new HashMap<String, DetailedClass>();
 
 	private final JavaClass clazz;
 	private final Map<String, QualifiedMethod> methods = new HashMap<String, QualifiedMethod>();
 	private final Set<QualifiedMethod> instantiations = new HashSet<QualifiedMethod>();
 
-	private Class(JavaClass clazz) {
+	private DetailedClass(JavaClass clazz) {
 		this.clazz = clazz;
 		for (Method method : clazz.getMethods()) {
 			methods.put(method.getName(), new QualifiedMethod(clazz, method));
 		}
 	}
 
-	public static Collection<Class> getClasses() {
+	public static Collection<DetailedClass> getClasses() {
 		return classes.values();
 	}
 
-	public static Class getClass(String name) {
+	public static DetailedClass getClass(String name) {
 		if (!classes.containsKey(name)) {
-			Class newClass = null;
+			DetailedClass newClass = null;
 			try {
-				newClass = new Class(Repository.lookupClass(name));
+				newClass = new DetailedClass(Repository.lookupClass(name));
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -44,9 +44,9 @@ public class Class {
 		return classes.get(name);
 	}
 
-	public static Class getClass(JavaClass clazz) {
+	public static DetailedClass getClass(JavaClass clazz) {
 		if (!classes.containsKey(clazz.getClassName()))
-			classes.put(clazz.getClassName(), new Class(clazz));
+			classes.put(clazz.getClassName(), new DetailedClass(clazz));
 		return classes.get(clazz.getClassName());
 	}
 

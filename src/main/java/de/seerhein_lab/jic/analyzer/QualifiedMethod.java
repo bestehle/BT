@@ -6,7 +6,7 @@ import java.util.Set;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 
-import de.seerhein_lab.jic.Class;
+import de.seerhein_lab.jic.DetailedClass;
 
 public final class QualifiedMethod {
 	private final JavaClass clazz;
@@ -38,7 +38,7 @@ public final class QualifiedMethod {
 		this.callingMethods.add(method);
 	}
 
-	public Set<QualifiedMethod> getCallingMethodsWithInstantiation(Class clazz) {
+	public Set<QualifiedMethod> getCallingMethodsWithInstantiation(DetailedClass clazz) {
 		Set<QualifiedMethod> intersection = new HashSet<QualifiedMethod>(clazz.getInstantiations());
 		Set<QualifiedMethod> result = new HashSet<QualifiedMethod>();
 		for (QualifiedMethod method : callingMethods) {

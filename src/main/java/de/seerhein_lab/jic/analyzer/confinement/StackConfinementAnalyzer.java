@@ -8,7 +8,7 @@ import net.jcip.annotations.ThreadSafe;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
-import de.seerhein_lab.jic.Class;
+import de.seerhein_lab.jic.DetailedClass;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
@@ -22,10 +22,10 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 @ThreadSafe
 // Superclass is thread-safe, this sub-class doesn't add any public methods
 public final class StackConfinementAnalyzer extends BaseMethodAnalyzer {
-	private Class classToAnalyze;
+	private DetailedClass classToAnalyze;
 
 	public StackConfinementAnalyzer(ClassContext classContext, MethodGen methodGen, AnalysisCache cache,
-			int methodInvocationDepth, Class classToAnalyze) {
+			int methodInvocationDepth, DetailedClass classToAnalyze) {
 		this(classContext, methodGen, new HashSet<QualifiedMethod>(), -1, cache,
 				methodInvocationDepth, classToAnalyze);
 		alreadyVisitedMethods.add(new QualifiedMethod(classContext.getJavaClass(), methodGen
@@ -34,7 +34,7 @@ public final class StackConfinementAnalyzer extends BaseMethodAnalyzer {
 
 	public StackConfinementAnalyzer(ClassContext classContext, MethodGen methodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache,
-			int methodInvocationDepth, Class classToAnalyze) {
+			int methodInvocationDepth, DetailedClass classToAnalyze) {
 		super(classContext, methodGen, alreadyVisitedMethods, depth, cache, methodInvocationDepth);
 		this.classToAnalyze = classToAnalyze;
 	}

@@ -8,7 +8,7 @@ import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
 import de.seerhein_lab.jic.AnalysisResult;
-import de.seerhein_lab.jic.Class;
+import de.seerhein_lab.jic.DetailedClass;
 import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
@@ -25,13 +25,13 @@ import de.seerhein_lab.jic.vm.ReferenceSlot;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class ConfinementVisitor extends BaseVisitor {
-	private Class classToAnalyze;
+	private DetailedClass classToAnalyze;
 
 	protected ConfinementVisitor(ClassContext classContext, MethodGen methodGen, Frame frame,
 			Heap heap, ConstantPoolGen constantPoolGen, PC pc,
 			CodeExceptionGen[] exceptionHandlers, Set<QualifiedMethod> alreadyVisitedMethods,
 			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-			AnalysisCache cache, int methodInvocationDepth, Class classToAnalyze) {
+			AnalysisCache cache, int methodInvocationDepth, DetailedClass classToAnalyze) {
 		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
 				alreadyVisitedMethods, pc, exceptionHandlers, depth, cache, methodInvocationDepth);
 		this.classToAnalyze = classToAnalyze;
@@ -73,9 +73,9 @@ public class ConfinementVisitor extends BaseVisitor {
 
 		HeapObject targetObject = targetReference.getObject(heap);
 
-		Set<QualifiedMethod> methods = Class.getClass(methodGen.getClassName())
+		Set<QualifiedMethod> methods = DetailedClass.getClass(methodGen.getClassName())
 				.getMethod(methodGen.getMethod().getName())
-				.getCallingMethodsWithInstantiation(Class.getClass(targetObject.getType()));
+				.getCallingMethodsWithInstantiation(DetailedClass.getClass(targetObject.getType()));
 
 		for (QualifiedMethod method : methods) {
 
@@ -83,13 +83,13 @@ public class ConfinementVisitor extends BaseVisitor {
 					.getClassName(), new ConstantPoolGen(method.getJavaClass().getConstantPool()));
 
 			BaseMethodAnalyzer methodAnalyzer = new ConfinementAnalyzer(classContext,
-					targetMethodGen, cache, 0, Class.getClass(targetObject.getType()));
+					targetMethodGen, cache, 0, DetailedClass.getClass(targetObject.getType()));
 
 			AnalysisResult results = methodAnalyzer.analyze();
 
 			for (EvaluationResult result : results.getResults()) {
 				for (HeapObject object : result.getHeap().getObjects()) {
-					object.getType().equals(anObject)
+					// object.getType().equals(anObject);
 				}
 			}
 

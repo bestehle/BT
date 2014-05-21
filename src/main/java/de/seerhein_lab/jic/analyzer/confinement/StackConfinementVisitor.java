@@ -7,7 +7,7 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
-import de.seerhein_lab.jic.Class;
+import de.seerhein_lab.jic.DetailedClass;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
@@ -20,17 +20,18 @@ import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.HeapObject;
 import de.seerhein_lab.jic.vm.PC;
 import de.seerhein_lab.jic.vm.ReferenceSlot;
+import de.seerhein_lab.jic.vm.UnknownObject;
 import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class StackConfinementVisitor extends BaseVisitor {
-	private Class classToAnalyze;
+	private DetailedClass classToAnalyze;
 
 	protected StackConfinementVisitor(ClassContext classContext, MethodGen methodGen, Frame frame,
 			Heap heap, ConstantPoolGen constantPoolGen, PC pc,
 			CodeExceptionGen[] exceptionHandlers, Set<QualifiedMethod> alreadyVisitedMethods,
 			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-			AnalysisCache cache, int methodInvocationDepth, Class classToAnalyze) {
+			AnalysisCache cache, int methodInvocationDepth, DetailedClass classToAnalyze) {
 		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
 				alreadyVisitedMethods, pc, exceptionHandlers, depth, cache, methodInvocationDepth);
 		this.classToAnalyze = classToAnalyze;

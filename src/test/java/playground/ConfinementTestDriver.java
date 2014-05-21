@@ -15,7 +15,7 @@ import org.apache.bcel.generic.MethodGen;
 
 import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.CallGraphHelper;
-import de.seerhein_lab.jic.Class;
+import de.seerhein_lab.jic.DetailedClass;
 import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
@@ -49,7 +49,7 @@ public class ConfinementTestDriver {
 
 		CallGraphHelper.printCallGraph();
 
-		Class classToAnalyze = Class.getClass("concurrent.AnotherClass");
+		DetailedClass classToAnalyze = DetailedClass.getClass("concurrent.AnotherClass");
 
 		AnalysisCache analysisCache = new AnalysisCache();
 
