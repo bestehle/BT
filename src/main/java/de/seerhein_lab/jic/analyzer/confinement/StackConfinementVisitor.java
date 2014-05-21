@@ -44,8 +44,8 @@ public class StackConfinementVisitor extends BaseVisitor {
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int methodInvocationDepth) {
-		return new ConfinementAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods, depth,
-				cache, methodInvocationDepth, classToAnalyze);
+		return new StackConfinementAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods,
+				depth, cache, methodInvocationDepth, classToAnalyze);
 	}
 
 	// ******************************************************************//
