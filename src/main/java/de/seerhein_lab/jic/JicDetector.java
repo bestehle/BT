@@ -10,7 +10,6 @@ import org.apache.commons.lang.time.DateFormatUtils;
 
 import de.seerhein_lab.jic.analyzer.BaseVisitor;
 import de.seerhein_lab.jic.analyzer.ClassAnalyzer;
-import de.seerhein_lab.jic.analyzer.ClassHelper;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.vm.Frame;
 import de.seerhein_lab.jic.vm.Heap;
@@ -58,19 +57,12 @@ public final class JicDetector implements Detector {
 	public void visitClassContext(ClassContext classContext) {
 		HeapObject.objects = 0;
 		JavaClass clazz = classContext.getJavaClass();
-		boolean supposedlyImmutable = new ClassHelper(clazz).supposedlyImmutable();
 
-		if (clazz.isAnnotation() || clazz.isInterface()) {
-			if (supposedlyImmutable)
-				reporter.reportBug(Utils.createBug("IMMUTABILITY_BUG", Confidence.HIGH,
-						"Type cannot be annotated as immutable", clazz));
+		if (clazz.isAnnotation() || clazz.isInterface())
 			return;
-		}
 
 		try {
-			Collection<BugInstance> bugs = supposedlyImmutable ? new ClassAnalyzer(classContext,
-					cache).isImmutable() : new ClassAnalyzer(classContext, cache)
-					.properlyConstructed();
+			Collection<BugInstance> bugs = new ClassAnalyzer(classContext, cache).isStackConfined();
 
 			for (BugInstance bug : bugs) {
 				reporter.reportBug(bug);
