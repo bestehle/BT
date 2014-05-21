@@ -4,6 +4,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,6 +14,8 @@ import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
+import org.apache.bcel.generic.ObjectType;
+import org.apache.bcel.generic.Type;
 
 import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.CallGraphHelper;
@@ -53,7 +57,19 @@ public class ConfinementTestDriver {
 
 		AnalysisCache analysisCache = new AnalysisCache();
 
-		for (QualifiedMethod method : classToAnalyze.getInstantiations()) {
+		Queue<QualifiedMethod> queue = new LinkedList<QualifiedMethod>(
+				classToAnalyze.getInstantiations());
+
+		while (!queue.isEmpty()) {
+			QualifiedMethod method = queue.remove();
+
+			Type returnType = method.getMethod().getReturnType();
+			if (returnType instanceof ObjectType
+					&& ((ObjectType) returnType).getClassName().equals(classToAnalyze.getName())) {
+				queue.addAll(method.getCallingMethods());
+				continue;
+			}
+
 			ClassContext classContextMock = mock(ClassContext.class);
 			when(classContextMock.getJavaClass()).thenReturn(method.getJavaClass());
 
