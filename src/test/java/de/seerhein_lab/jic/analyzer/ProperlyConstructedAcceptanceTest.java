@@ -28,7 +28,7 @@ public class ProperlyConstructedAcceptanceTest {
 	@BindAnalyzerMethod
 	public static Collection<BugInstance> bindClassAnalyzerToProperlyConstructed(
 			ClassAnalyzer analyzer) {
-		return analyzer.properlyConstructed();
+		return analyzer.isStackConfined();
 	}
 
 	/**

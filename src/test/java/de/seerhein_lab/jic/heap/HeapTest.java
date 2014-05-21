@@ -2,6 +2,7 @@ package de.seerhein_lab.jic.heap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +11,7 @@ import de.seerhein_lab.jic.vm.Array;
 import de.seerhein_lab.jic.vm.ClassInstance;
 import de.seerhein_lab.jic.vm.Heap;
 import de.seerhein_lab.jic.vm.ReferenceSlot;
+import de.seerhein_lab.jic.vm.UnknownObject;
 
 public class HeapTest {
 	private Heap heap;
@@ -35,7 +37,7 @@ public class HeapTest {
 		c = heap.newClassInstance(false, "");
 		d = heap.newClassInstance(false, "");
 		e = heap.newClassInstance(false, "");
-		f = heap.newArray();
+		f = heap.newArray("");
 
 		aRef = new ReferenceSlot(a);
 		bRef = new ReferenceSlot(b);
@@ -60,7 +62,7 @@ public class HeapTest {
 
 	@Test
 	public void testInitalization() {
-		assertNotNull(heap.getMutableExternalObject());
+		// assertNotNull(heap.getMutableExternalObject());
 		assertNotNull(heap.getThisInstance());
 	}
 
@@ -81,16 +83,16 @@ public class HeapTest {
 		heap.publish(b);
 
 		assertEquals(a, aRef.getObject(heap));
-		assertEquals(heap.getMutableExternalObject(), bRef.getObject(heap));
-		assertEquals(heap.getMutableExternalObject(), cRef.getObject(heap));
-		assertEquals(heap.getMutableExternalObject(), dRef.getObject(heap));
-		assertEquals(heap.getMutableExternalObject(), eRef.getObject(heap));
-		assertEquals(heap.getMutableExternalObject(), fRef.getObject(heap));
+		assertTrue(bRef.getObject(heap) instanceof UnknownObject);
+		assertTrue(cRef.getObject(heap) instanceof UnknownObject);
+		assertTrue(dRef.getObject(heap) instanceof UnknownObject);
+		assertTrue(eRef.getObject(heap) instanceof UnknownObject);
+		assertTrue(fRef.getObject(heap) instanceof UnknownObject);
 	}
 
 	@Test
 	public void testNotPublishThis() {
-		ClassInstance thisInstance = heap.getThisInstance();
+		UnknownObject thisInstance = heap.getThisInstance();
 		heap.publish(thisInstance);
 		// assertEquals(thisInstance, heap.get(thisInstance.getId()));
 		assertEquals(thisInstance, heap.getThisInstance());
@@ -100,8 +102,8 @@ public class HeapTest {
 	public void testRepublish() {
 		assertEquals(f, fRef.getObject(heap));
 		heap.publish(f);
-		assertEquals(heap.getMutableExternalObject(), fRef.getObject(heap));
+		assertTrue(fRef.getObject(heap) instanceof UnknownObject);
 		heap.publish(f);
-		assertEquals(heap.getMutableExternalObject(), fRef.getObject(heap));
+		assertTrue(fRef.getObject(heap) instanceof UnknownObject);
 	}
 }

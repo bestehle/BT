@@ -25,8 +25,7 @@ public class FieldsNotPublishedAcceptanceTest {
 	@BindAnalyzerMethod
 	public static Collection<BugInstance> bindClassAnalyzerToProperlyConstructed(
 			ClassAnalyzer analyzer) {
-		analyzer.ctorsUnmodifiable();
-		return analyzer.methodsUnmodifiable();
+		return analyzer.isStackConfined();
 	}
 
 	@NoBugsExpected

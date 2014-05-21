@@ -27,7 +27,7 @@ public class IsImmutableAcceptanceTest {
 
 	@BindAnalyzerMethod
 	public static Collection<BugInstance> bindIsImmutable(ClassAnalyzer analyzer) {
-		return analyzer.isImmutable();
+		return analyzer.isStackConfined();
 	}
 
 	/**

@@ -25,7 +25,7 @@ public class CtorUnmodifiableAcceptanceTest {
 	@BindAnalyzerMethod
 	public static Collection<BugInstance> bindClassAnalyzerToProperlyConstructed(
 			ClassAnalyzer analyzer) {
-		return analyzer.ctorsUnmodifiable();
+		return analyzer.isStackConfined();
 	}
 
 	/**

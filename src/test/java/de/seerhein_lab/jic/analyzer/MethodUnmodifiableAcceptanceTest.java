@@ -22,8 +22,7 @@ public class MethodUnmodifiableAcceptanceTest {
 	@BindAnalyzerMethod
 	public static Collection<BugInstance> bindClassAnalyzerToProperlyConstructed(
 			ClassAnalyzer analyzer) {
-		analyzer.ctorsUnmodifiable();
-		return analyzer.methodsUnmodifiable();
+		return analyzer.isStackConfined();
 	}
 
 	@BugsExpected
