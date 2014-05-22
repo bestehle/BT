@@ -1,66 +1,67 @@
 package playground;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.bcel.Constants;
 import org.apache.bcel.Repository;
+import org.apache.bcel.classfile.Attribute;
+import org.apache.bcel.classfile.InnerClass;
+import org.apache.bcel.classfile.InnerClasses;
 import org.apache.bcel.classfile.JavaClass;
-import org.apache.bcel.generic.ConstantPoolGen;
-import org.apache.bcel.generic.MethodGen;
-import org.apache.bcel.generic.ObjectType;
-import org.apache.bcel.generic.Type;
+import org.apache.bcel.classfile.Utility;
 
 import de.seerhein_lab.jic.AnalysisResult;
-import de.seerhein_lab.jic.CallGraphHelper;
+import de.seerhein_lab.jic.CallGraph;
 import de.seerhein_lab.jic.DetailedClass;
 import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Utils;
-import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
-import de.seerhein_lab.jic.analyzer.QualifiedMethod;
-import de.seerhein_lab.jic.analyzer.confinement.StackConfinementAnalyzer;
-import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.vm.HeapObject;
 import edu.umd.cs.findbugs.SortedBugCollection;
-import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class ConfinementTestDriver {
 	private static final String LOGFILEPATH = "log.txt";
 	private static Logger logger;
-	private static Set<EvaluationResult> results;
+	private static Set<EvaluationResult> results = new HashSet<EvaluationResult>();
 
 	public static void main(String[] args) throws ClassNotFoundException, SecurityException,
 			IOException {
 
 		logger = Utils.setUpLogger("ConfinementTestDriver", LOGFILEPATH, Level.ALL);
+		Set<JavaClass> classes = new HashSet<JavaClass>();
 
-		JavaClass clazz = Repository.lookupClass("concurrent.StackConfinement");
+		JavaClass clazz = Repository
+				.lookupClass("de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest");
 
-		for (Package p : Package.getPackages()) {
-			logger.severe(p.getName());
-			// TODO
+		classes.add(clazz);
+
+		for (InnerClass innerClass : getInnerClasses(clazz)) {
+			classes.add(Repository.lookupClass(Utility.compactClassName(clazz.getConstantPool()
+					.getConstantString(innerClass.getInnerClassIndex(), Constants.CONSTANT_Class))));
 		}
+
+		// for (Package p : Package.getPackages()) {
+		// logger.severe(p.getName());
+		// // TODO
+		// }
 
 		SortedBugCollection bugs = new SortedBugCollection();
 
-		CallGraphHelper.generateCallGraph(clazz);
+		CallGraph.generateCallGraph(classes);
 
-		CallGraphHelper.printCallGraph();
+		CallGraph.printCallGraph();
 
-		DetailedClass classToAnalyze = DetailedClass.getClass("concurrent.AnotherClass");
+		DetailedClass classToAnalyze = DetailedClass.getClass("de.seerhein_lab.jic.analyzer."
+				+ "StackConfinementAcceptanceTest$TestClass");
 
-		Set<AnalysisResult> analysisResults = analyzeMethods(classToAnalyze);
+		Set<AnalysisResult> analysisResults = CallGraph.analyzeMethods(classToAnalyze);
 
 		for (AnalysisResult analysisResult : analysisResults) {
 			bugs.addAll(analysisResult.getBugs());
-			results = analysisResult.getResults();
+			results.addAll(analysisResult.getResults());
 		}
 
 		for (EvaluationResult result : results) {
@@ -79,34 +80,11 @@ public class ConfinementTestDriver {
 		// logger.log(Level.SEVERE, "end bugs");
 	}
 
-	private static Set<AnalysisResult> analyzeMethods(DetailedClass classToAnalyze) {
-		AnalysisCache analysisCache = new AnalysisCache();
-		HashSet<AnalysisResult> results = new HashSet<AnalysisResult>();
-
-		Queue<QualifiedMethod> queue = new LinkedList<QualifiedMethod>(
-				classToAnalyze.getInstantiations());
-
-		while (!queue.isEmpty()) {
-			QualifiedMethod method = queue.remove();
-
-			Type returnType = method.getMethod().getReturnType();
-			if (returnType instanceof ObjectType
-					&& ((ObjectType) returnType).getClassName().equals(classToAnalyze.getName())) {
-				queue.addAll(method.getCallingMethods());
-				continue;
-			}
-
-			ClassContext classContextMock = mock(ClassContext.class);
-			when(classContextMock.getJavaClass()).thenReturn(method.getJavaClass());
-
-			MethodGen methodGen = new MethodGen(method.getMethod(), method.getJavaClass()
-					.getClassName(), new ConstantPoolGen(method.getJavaClass().getConstantPool()));
-
-			BaseMethodAnalyzer methodAnalyzer = new StackConfinementAnalyzer(classContextMock,
-					methodGen, analysisCache, 0, classToAnalyze);
-
-			results.add(methodAnalyzer.analyze());
+	private static InnerClass[] getInnerClasses(JavaClass clazz) {
+		for (Attribute attribute : clazz.getAttributes()) {
+			if (attribute instanceof InnerClasses)
+				return ((InnerClasses) attribute).getInnerClasses();
 		}
-		return results;
+		return new InnerClass[0];
 	}
 }
