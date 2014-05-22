@@ -55,7 +55,18 @@ public class DetailedClass {
 	}
 
 	public QualifiedMethod getMethod(String method) {
-		return methods.get(method);
+		QualifiedMethod targetMethod = methods.get(method);
+
+		while (targetMethod == null) {
+			try {
+				targetMethod = DetailedClass.getClass(clazz.getSuperClass()).getMethod(method);
+			} catch (ClassNotFoundException e) {
+				throw new AssertionError("targetMethod " + method + " not found in " + clazz
+						+ " or its supertypes");
+			}
+		}
+
+		return targetMethod;
 	}
 
 	public QualifiedMethod getMethod(Method method) {
