@@ -1,53 +1,28 @@
 package de.seerhein_lab.jic;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 
 import de.seerhein_lab.jic.analyzer.QualifiedMethod;
 
 public class DetailedClass {
-	private final static Map<String, DetailedClass> classes = new HashMap<String, DetailedClass>();
 
 	private final JavaClass clazz;
 	private final Map<String, QualifiedMethod> methods = new HashMap<String, QualifiedMethod>();
 	private final Set<QualifiedMethod> instantiations = new HashSet<QualifiedMethod>();
+	private final ClassRepository repository;
 
-	private DetailedClass(JavaClass clazz) {
+	DetailedClass(JavaClass clazz, ClassRepository repository) {
 		this.clazz = clazz;
+		this.repository = repository;
 		for (Method method : clazz.getMethods()) {
 			methods.put(method.getName(), new QualifiedMethod(clazz, method));
 		}
-	}
-
-	public static Collection<DetailedClass> getClasses() {
-		return classes.values();
-	}
-
-	public static DetailedClass getClass(String name) {
-		if (!classes.containsKey(name)) {
-			DetailedClass newClass = null;
-			try {
-				newClass = new DetailedClass(Repository.lookupClass(name));
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
-			classes.put(name, newClass);
-			return newClass;
-		}
-		return classes.get(name);
-	}
-
-	public static DetailedClass getClass(JavaClass clazz) {
-		if (!classes.containsKey(clazz.getClassName()))
-			classes.put(clazz.getClassName(), new DetailedClass(clazz));
-		return classes.get(clazz.getClassName());
 	}
 
 	public Map<String, QualifiedMethod> getMethods() {
@@ -59,7 +34,7 @@ public class DetailedClass {
 
 		while (targetMethod == null) {
 			try {
-				targetMethod = DetailedClass.getClass(clazz.getSuperClass()).getMethod(method);
+				targetMethod = repository.getClass(clazz.getSuperClass()).getMethod(method);
 			} catch (ClassNotFoundException e) {
 				throw new AssertionError("targetMethod " + method + " not found in " + clazz
 						+ " or its supertypes");

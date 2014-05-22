@@ -1,7 +1,13 @@
 package playground;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,7 +21,7 @@ import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Utility;
 
 import de.seerhein_lab.jic.AnalysisResult;
-import de.seerhein_lab.jic.CallGraph;
+import de.seerhein_lab.jic.ClassRepository;
 import de.seerhein_lab.jic.DetailedClass;
 import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Utils;
@@ -43,21 +49,25 @@ public class ConfinementTestDriver {
 					.getConstantString(innerClass.getInnerClassIndex(), Constants.CONSTANT_Class))));
 		}
 
-		// for (Package p : Package.getPackages()) {
-		// logger.severe(p.getName());
-		// // TODO
-		// }
+		Collection<JavaClass> classes2 = getClasses("de.seerhein_lab.jic.slot");
+
+		for (Package p : Package.getPackages()) {
+			logger.severe(p.getName());
+			// TODO
+		}
 
 		SortedBugCollection bugs = new SortedBugCollection();
 
-		CallGraph.generateCallGraph(classes);
+		ClassRepository repository = new ClassRepository();
 
-		CallGraph.printCallGraph();
+		repository.generateCallGraph(classes);
 
-		DetailedClass classToAnalyze = DetailedClass.getClass("de.seerhein_lab.jic.analyzer."
+		repository.printCallGraph();
+
+		DetailedClass classToAnalyze = repository.getClass("de.seerhein_lab.jic.analyzer."
 				+ "StackConfinementAcceptanceTest$TestClass");
 
-		Set<AnalysisResult> analysisResults = CallGraph.analyzeMethods(classToAnalyze);
+		Set<AnalysisResult> analysisResults = repository.analyzeMethods(classToAnalyze);
 
 		for (AnalysisResult analysisResult : analysisResults) {
 			bugs.addAll(analysisResult.getBugs());
@@ -87,4 +97,63 @@ public class ConfinementTestDriver {
 		}
 		return new InnerClass[0];
 	}
+
+	/**
+	 * Scans all classes accessible from the context class loader which belong
+	 * to the given package and subpackages.
+	 * 
+	 * @param packageName
+	 *            The base package
+	 * @return The classes
+	 * @throws ClassNotFoundException
+	 * @throws IOException
+	 */
+	private static Collection<JavaClass> getClasses(String packageName)
+			throws ClassNotFoundException, IOException {
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		assert classLoader != null;
+		String path = packageName.replace('.', '/');
+		Enumeration<URL> resources = classLoader.getResources(path);
+		List<File> dirs = new ArrayList<File>();
+		while (resources.hasMoreElements()) {
+			URL resource = resources.nextElement();
+			dirs.add(new File(resource.getFile()));
+		}
+		ArrayList<JavaClass> classes = new ArrayList<JavaClass>();
+		for (File directory : dirs) {
+			classes.addAll(findClasses(directory, packageName));
+		}
+		return classes;
+	}
+
+	/**
+	 * Recursive method used to find all classes in a given directory and
+	 * subdirs.
+	 * 
+	 * @param directory
+	 *            The base directory
+	 * @param packageName
+	 *            The package name for classes found inside the base directory
+	 * @return The classes
+	 * @throws ClassNotFoundException
+	 */
+	private static List<JavaClass> findClasses(File directory, String packageName)
+			throws ClassNotFoundException {
+		List<JavaClass> classes = new ArrayList<JavaClass>();
+		if (!directory.exists()) {
+			return classes;
+		}
+		File[] files = directory.listFiles();
+		for (File file : files) {
+			if (file.isDirectory()) {
+				assert !file.getName().contains(".");
+				classes.addAll(findClasses(file, packageName + "." + file.getName()));
+			} else if (file.getName().endsWith(".class")) {
+				classes.add(Repository.lookupClass(packageName + '.'
+						+ file.getName().substring(0, file.getName().length() - 6)));
+			}
+		}
+		return classes;
+	}
+
 }

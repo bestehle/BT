@@ -3,12 +3,16 @@ package de.seerhein_lab.jic;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
@@ -26,17 +30,42 @@ import de.seerhein_lab.jic.analyzer.confinement.StackConfinementAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class CallGraph {
+public class ClassRepository {
 	private static final Logger logger = Logger.getLogger("CallGraphHelper");
+	private final Map<String, DetailedClass> classes = new HashMap<String, DetailedClass>();
 
-	public static void generateCallGraph(Set<JavaClass> classes) {
+	public void generateCallGraph(Set<JavaClass> classes) {
 		for (JavaClass javaClass : classes) {
 			generateCallGraph(javaClass);
 		}
 	}
 
-	public static void generateCallGraph(JavaClass jClazz) {
-		DetailedClass clazz = DetailedClass.getClass(jClazz);
+	public Collection<DetailedClass> getClasses() {
+		return classes.values();
+	}
+
+	public DetailedClass getClass(String name) {
+		if (!classes.containsKey(name)) {
+			DetailedClass newClass = null;
+			try {
+				newClass = new DetailedClass(Repository.lookupClass(name), this);
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+			classes.put(name, newClass);
+			return newClass;
+		}
+		return classes.get(name);
+	}
+
+	public DetailedClass getClass(JavaClass clazz) {
+		if (!classes.containsKey(clazz.getClassName()))
+			classes.put(clazz.getClassName(), new DetailedClass(clazz, this));
+		return classes.get(clazz.getClassName());
+	}
+
+	public void generateCallGraph(JavaClass jClazz) {
+		DetailedClass clazz = getClass(jClazz);
 
 		for (Method method : jClazz.getMethods()) {
 
@@ -56,16 +85,13 @@ public class CallGraph {
 			for (InstructionHandle ih : instructions) {
 				if (ih.getInstruction() instanceof NEW) {
 					NEW newInstruction = (NEW) ih.getInstruction();
-					DetailedClass.getClass(
-							newInstruction.getLoadClassType(constantPool).getClassName())
+					getClass(newInstruction.getLoadClassType(constantPool).getClassName())
 							.addInstantiation(clazz.getMethod(method));
 
 					logger.severe("new: " + newInstruction.getLoadClassType(constantPool));
 				} else if (ih.getInstruction() instanceof InvokeInstruction) {
 					InvokeInstruction invokeInstruction = (InvokeInstruction) ih.getInstruction();
-					DetailedClass
-							.getClass(
-									invokeInstruction.getLoadClassType(constantPool).getClassName())
+					getClass(invokeInstruction.getLoadClassType(constantPool).getClassName())
 							.getMethod(invokeInstruction.getMethodName(constantPool))
 							.addCallingMethod(clazz.getMethod(method));
 
@@ -77,10 +103,10 @@ public class CallGraph {
 		}
 	}
 
-	public static void printCallGraph() {
+	public void printCallGraph() {
 		logger.severe("Ergebnis:\n");
 
-		for (DetailedClass clazz : DetailedClass.getClasses()) {
+		for (DetailedClass clazz : getClasses()) {
 			logger.severe(clazz.getName());
 			logger.severe("\tInstanzierungen: " + clazz.getInstantiations());
 			for (QualifiedMethod method : clazz.getMethods().values()) {
@@ -89,7 +115,7 @@ public class CallGraph {
 		}
 	}
 
-	public static Set<AnalysisResult> analyzeMethods(DetailedClass classToAnalyze) {
+	public Set<AnalysisResult> analyzeMethods(DetailedClass classToAnalyze) {
 		AnalysisCache analysisCache = new AnalysisCache();
 		HashSet<AnalysisResult> results = new HashSet<AnalysisResult>();
 
