@@ -79,10 +79,10 @@ public class StackConfinementAcceptanceTest {
 
 	@BugsExpected
 	public static class Story006_Array {
-		private Object[] array;
+		private TestClass[] array;
 
 		public void assign() {
-			array = new Object[5];
+			array = new TestClass[5];
 		}
 	}
 
@@ -123,7 +123,7 @@ public class StackConfinementAcceptanceTest {
 		}
 	}
 
-	@BugsExpected
+	@NoBugsExpected
 	public static class Story011_ReturnInstance {
 
 		public Object assign() {
@@ -135,7 +135,7 @@ public class StackConfinementAcceptanceTest {
 	public static class Story012_StoreParameter {
 		private Object field;
 
-		public void assign(Object obj) {
+		public void assign(TestClass obj) {
 			field = obj;
 		}
 	}
@@ -146,12 +146,12 @@ public class StackConfinementAcceptanceTest {
 
 		public void assign(Object obj) {
 			field = obj;
-			field = new Object();
+			field = new TestClass();
 		}
 	}
 
 	@BugsExpected
-	public static class Story014_StoreParameter {
+	public static class Story014_StoreRecursive {
 		private TestClass field;
 
 		public void assign() {
@@ -167,7 +167,7 @@ public class StackConfinementAcceptanceTest {
 		public void assign() {
 			TestClass testClass = new TestClass();
 			field = testClass;
-			testClass.klass = new Object();
+			testClass.klass = new TestClass();
 		}
 	}
 
@@ -177,10 +177,10 @@ public class StackConfinementAcceptanceTest {
 
 		public void assign() {
 			TestClass testClass = new TestClass();
-			testClass.klass = new Object();
+			testClass.klass = new TestClass();
 		}
 	}
-	
+
 	@BugsExpected
 	public static class Story017_StoreFromReturn {
 		private TestClass field;
@@ -188,14 +188,14 @@ public class StackConfinementAcceptanceTest {
 		public void assign() {
 			field = TestClass.getInstance();
 		}
-	}	
+	}
 
 	private static class TestClass {
 		public Object[] array;
 		public Object klass;
 		public TestClass tc;
 		public int i;
-		
+
 		public static TestClass getInstance() {
 			return new TestClass();
 		}
