@@ -30,14 +30,24 @@ public class DetailedClass {
 	}
 
 	public QualifiedMethod getMethod(String method) {
-		// if (clazz.isInterface()) {
-		// JavaClass[] interfaces = clazz.getAllInterfaces();
-		// for (JavaClass interFace : interfaces) {
-		// targetMethod = repository.getClass(interFace).getMethod(method);
-		// } TODO
-		// }
-
 		QualifiedMethod targetMethod = methods.get(method);
+		if (targetMethod != null)
+			return targetMethod;
+
+		if (clazz.isInterface()) {
+			JavaClass[] interfaces = null;
+			try {
+				interfaces = clazz.getAllInterfaces();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+			int i = 0;
+			while (targetMethod == null) {
+				targetMethod = repository.getClass(interfaces[i]).methods.get(method);
+				i++;
+			}
+			return targetMethod;
+		}
 
 		while (targetMethod == null) {
 			try {
