@@ -60,7 +60,7 @@ public class ConfinementTestDriver {
 
 		ClassRepository repository = new ClassRepository();
 
-		repository.generateCallGraph(classes);
+		repository.analyzeClasses(classes);
 
 		repository.printCallGraph();
 

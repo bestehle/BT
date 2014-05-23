@@ -34,9 +34,9 @@ public class ClassRepository {
 	private static final Logger logger = Logger.getLogger("CallGraphHelper");
 	private final Map<String, DetailedClass> classes = new HashMap<String, DetailedClass>();
 
-	public void generateCallGraph(Set<JavaClass> classes) {
+	public void analyzeClasses(Set<JavaClass> classes) {
 		for (JavaClass javaClass : classes) {
-			generateCallGraph(javaClass);
+			analyzeClass(javaClass);
 		}
 	}
 
@@ -64,7 +64,7 @@ public class ClassRepository {
 		return classes.get(clazz.getClassName());
 	}
 
-	public void generateCallGraph(JavaClass jClazz) {
+	public void analyzeClass(JavaClass jClazz) {
 		DetailedClass clazz = getClass(jClazz);
 
 		for (Method method : jClazz.getMethods()) {

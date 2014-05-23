@@ -24,10 +24,10 @@ import de.seerhein_lab.jic.vm.PC;
 import de.seerhein_lab.jic.vm.ReferenceSlot;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
-public class ConfinementVisitor extends BaseVisitor {
+public class StrictThreadConfinementVisitor extends BaseVisitor {
 	private DetailedClass classToAnalyze;
 
-	protected ConfinementVisitor(ClassContext classContext, MethodGen methodGen, Frame frame,
+	protected StrictThreadConfinementVisitor(ClassContext classContext, MethodGen methodGen, Frame frame,
 			Heap heap, ConstantPoolGen constantPoolGen, PC pc,
 			CodeExceptionGen[] exceptionHandlers, Set<QualifiedMethod> alreadyVisitedMethods,
 			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
@@ -45,7 +45,7 @@ public class ConfinementVisitor extends BaseVisitor {
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int methodInvocationDepth) {
-		return new ConfinementAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods, depth,
+		return new StrictThreadConfinementAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods, depth,
 				cache, methodInvocationDepth, classToAnalyze);
 	}
 
@@ -82,7 +82,7 @@ public class ConfinementVisitor extends BaseVisitor {
 			MethodGen targetMethodGen = new MethodGen(method.getMethod(), method.getJavaClass()
 					.getClassName(), new ConstantPoolGen(method.getJavaClass().getConstantPool()));
 
-			BaseMethodAnalyzer methodAnalyzer = new ConfinementAnalyzer(classContext,
+			BaseMethodAnalyzer methodAnalyzer = new StrictThreadConfinementAnalyzer(classContext,
 					targetMethodGen, cache, 0, DetailedClass.getClass(targetObject.getType()));
 
 			AnalysisResult results = methodAnalyzer.analyze();
