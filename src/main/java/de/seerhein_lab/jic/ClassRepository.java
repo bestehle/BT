@@ -31,10 +31,10 @@ import de.seerhein_lab.jic.cache.AnalysisCache;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class ClassRepository {
-	private static final Logger logger = Logger.getLogger("CallGraphHelper");
+	private static final Logger logger = Logger.getLogger("ClassRepository");
 	private final Map<String, DetailedClass> classes = new HashMap<String, DetailedClass>();
 
-	public void analyzeClasses(Set<JavaClass> classes) {
+	public void analyzeClasses(Collection<JavaClass> classes) {
 		for (JavaClass javaClass : classes) {
 			analyzeClass(javaClass);
 		}
@@ -84,20 +84,20 @@ public class ClassRepository {
 
 			for (InstructionHandle ih : instructions) {
 				if (ih.getInstruction() instanceof NEW) {
-					NEW newInstruction = (NEW) ih.getInstruction();
-					getClass(newInstruction.getLoadClassType(constantPool).getClassName())
+					NEW instruction = (NEW) ih.getInstruction();
+					getClass(instruction.getLoadClassType(constantPool).getClassName())
 							.addInstantiation(clazz.getMethod(method));
 
-					logger.severe("new: " + newInstruction.getLoadClassType(constantPool));
+					logger.severe("new: " + instruction.getLoadClassType(constantPool));
 				} else if (ih.getInstruction() instanceof InvokeInstruction) {
-					InvokeInstruction invokeInstruction = (InvokeInstruction) ih.getInstruction();
-					getClass(invokeInstruction.getLoadClassType(constantPool).getClassName())
-							.getMethod(invokeInstruction.getMethodName(constantPool))
+					InvokeInstruction instruction = (InvokeInstruction) ih.getInstruction();
+					getClass(instruction.getLoadClassType(constantPool).getClassName())
+							.getMethod(instruction.getMethodName(constantPool))
 							.addCallingMethod(clazz.getMethod(method));
 
 					logger.severe(ih.getInstruction().getName() + "   --    "
-							+ invokeInstruction.getLoadClassType(constantPool) + "."
-							+ invokeInstruction.getMethodName(constantPool));
+							+ instruction.getLoadClassType(constantPool) + "."
+							+ instruction.getMethodName(constantPool));
 				}
 			}
 		}

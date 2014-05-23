@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import org.apache.bcel.Constants;
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.Attribute;
+import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.InnerClass;
 import org.apache.bcel.classfile.InnerClasses;
 import org.apache.bcel.classfile.JavaClass;
@@ -22,7 +23,6 @@ import org.apache.bcel.classfile.Utility;
 
 import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.ClassRepository;
-import de.seerhein_lab.jic.DetailedClass;
 import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.vm.HeapObject;
@@ -35,40 +35,18 @@ public class ConfinementTestDriver {
 
 	public static void main(String[] args) throws ClassNotFoundException, SecurityException,
 			IOException {
-
 		logger = Utils.setUpLogger("ConfinementTestDriver", LOGFILEPATH, Level.ALL);
-		Set<JavaClass> classes = new HashSet<JavaClass>();
 
-		JavaClass clazz = Repository
-				.lookupClass("de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest");
+		String class_name = "de.seerhein_lab.jic.ClassRepository";
+		String classToAnalyze = "de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest$TestClass";
 
-		classes.add(clazz);
+		Set<JavaClass> classes = getClassWithInnerClasses(class_name);
 
-		for (InnerClass innerClass : getInnerClasses(clazz)) {
-			classes.add(Repository.lookupClass(Utility.compactClassName(clazz.getConstantPool()
-					.getConstantString(innerClass.getInnerClassIndex(), Constants.CONSTANT_Class))));
-		}
+		// Collection<JavaClass> classes = getClasses("de.seerhein_lab.jic");
 
-		Collection<JavaClass> classes2 = getClasses("de.seerhein_lab.jic.slot");
-
-		for (Package p : Package.getPackages()) {
-			logger.severe(p.getName());
-			// TODO
-		}
+		Set<AnalysisResult> analysisResults = analyze(classToAnalyze, classes);
 
 		SortedBugCollection bugs = new SortedBugCollection();
-
-		ClassRepository repository = new ClassRepository();
-
-		repository.analyzeClasses(classes);
-
-		repository.printCallGraph();
-
-		DetailedClass classToAnalyze = repository.getClass("de.seerhein_lab.jic.analyzer."
-				+ "StackConfinementAcceptanceTest$TestClass");
-
-		Set<AnalysisResult> analysisResults = repository.analyzeMethods(classToAnalyze);
-
 		for (AnalysisResult analysisResult : analysisResults) {
 			bugs.addAll(analysisResult.getBugs());
 			results.addAll(analysisResult.getResults());
@@ -90,12 +68,47 @@ public class ConfinementTestDriver {
 		// logger.log(Level.SEVERE, "end bugs");
 	}
 
-	private static InnerClass[] getInnerClasses(JavaClass clazz) {
-		for (Attribute attribute : clazz.getAttributes()) {
-			if (attribute instanceof InnerClasses)
-				return ((InnerClasses) attribute).getInnerClasses();
+	public static Set<AnalysisResult> analyze(String classToCheck,
+			Collection<JavaClass> classesToAnalyze) {
+		ClassRepository repository = new ClassRepository();
+
+		repository.analyzeClasses(classesToAnalyze);
+
+		return repository.analyzeMethods(repository.getClass(classToCheck));
+	}
+
+	private static Set<JavaClass> getClassWithInnerClasses(String className) {
+		Set<JavaClass> classes = new HashSet<JavaClass>();
+
+		JavaClass clazz = null;
+		try {
+			clazz = Repository.lookupClass(className);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
-		return new InnerClass[0];
+
+		classes.add(clazz);
+
+		InnerClass[] innerClasses = new InnerClass[0];
+		for (Attribute attribute : clazz.getAttributes()) {
+			if (attribute instanceof InnerClasses) {
+				innerClasses = ((InnerClasses) attribute).getInnerClasses();
+			}
+		}
+
+		for (InnerClass innerClass : innerClasses) {
+			try {
+				classes.add(Repository.lookupClass(Utility.compactClassName(clazz.getConstantPool()
+						.getConstantString(innerClass.getInnerClassIndex(),
+								Constants.CONSTANT_Class))));
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (ClassFormatException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return classes;
 	}
 
 	/**
@@ -110,15 +123,18 @@ public class ConfinementTestDriver {
 	 */
 	private static Collection<JavaClass> getClasses(String packageName)
 			throws ClassNotFoundException, IOException {
+
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		assert classLoader != null;
+
 		String path = packageName.replace('.', '/');
+
 		Enumeration<URL> resources = classLoader.getResources(path);
+
 		List<File> dirs = new ArrayList<File>();
-		while (resources.hasMoreElements()) {
-			URL resource = resources.nextElement();
-			dirs.add(new File(resource.getFile()));
-		}
+
+		while (resources.hasMoreElements())
+			dirs.add(new File(resources.nextElement().getFile()));
+
 		ArrayList<JavaClass> classes = new ArrayList<JavaClass>();
 		for (File directory : dirs) {
 			classes.addAll(findClasses(directory, packageName));
@@ -140,18 +156,19 @@ public class ConfinementTestDriver {
 	private static List<JavaClass> findClasses(File directory, String packageName)
 			throws ClassNotFoundException {
 		List<JavaClass> classes = new ArrayList<JavaClass>();
-		if (!directory.exists()) {
+
+		if (!directory.exists())
 			return classes;
-		}
+
 		File[] files = directory.listFiles();
 		for (File file : files) {
-			if (file.isDirectory()) {
-				assert !file.getName().contains(".");
-				classes.addAll(findClasses(file, packageName + "." + file.getName()));
-			} else if (file.getName().endsWith(".class")) {
+			String fileName = file.getName();
+			if (file.isDirectory())
+				classes.addAll(findClasses(file, packageName + "." + fileName));
+			else if (fileName.endsWith(".class"))
 				classes.add(Repository.lookupClass(packageName + '.'
-						+ file.getName().substring(0, file.getName().length() - 6)));
-			}
+						+ fileName.substring(0, fileName.length() - 6)));
+
 		}
 		return classes;
 	}

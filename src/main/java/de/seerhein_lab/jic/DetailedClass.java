@@ -30,6 +30,13 @@ public class DetailedClass {
 	}
 
 	public QualifiedMethod getMethod(String method) {
+		// if (clazz.isInterface()) {
+		// JavaClass[] interfaces = clazz.getAllInterfaces();
+		// for (JavaClass interFace : interfaces) {
+		// targetMethod = repository.getClass(interFace).getMethod(method);
+		// } TODO
+		// }
+
 		QualifiedMethod targetMethod = methods.get(method);
 
 		while (targetMethod == null) {
@@ -62,5 +69,14 @@ public class DetailedClass {
 
 	public String getName() {
 		return clazz.getClassName();
+	}
+
+	public JavaClass getJavaClass() {
+		return clazz;
+	}
+
+	@Override
+	public String toString() {
+		return "DetailedClass [clazz=" + clazz.getClassName() + "]";
 	}
 }
