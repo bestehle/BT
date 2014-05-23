@@ -38,11 +38,13 @@ public class ConfinementTestDriver {
 		logger = Utils.setUpLogger("ConfinementTestDriver", LOGFILEPATH, Level.ALL);
 
 		String class_name = "de.seerhein_lab.jic.ClassRepository";
-		String classToAnalyze = "de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest$TestClass";
+		// String classToAnalyze =
+		// "de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest$TestClass";
+		String classToAnalyze = "de.seerhein_lab.jic.vm.Heap";
 
-		Set<JavaClass> classes = getClassWithInnerClasses(class_name);
+		// Set<JavaClass> classes = getClassWithInnerClasses(class_name);
 
-		// Collection<JavaClass> classes = getClasses("de.seerhein_lab.jic");
+		Collection<JavaClass> classes = getClasses("de.seerhein_lab.jic");
 
 		Set<AnalysisResult> analysisResults = analyze(classToAnalyze, classes);
 
