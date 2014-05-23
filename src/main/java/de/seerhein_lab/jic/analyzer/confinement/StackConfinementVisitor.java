@@ -5,7 +5,9 @@ import java.util.Set;
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
+import org.apache.bcel.generic.InvokeInstruction;
 import org.apache.bcel.generic.MethodGen;
+import org.apache.bcel.generic.Type;
 
 import de.seerhein_lab.jic.DetailedClass;
 import de.seerhein_lab.jic.Pair;
@@ -95,4 +97,14 @@ public class StackConfinementVisitor extends BaseVisitor {
 				pc.getCurrentInstruction());
 	}
 
+	@Override
+	protected boolean hasToBeAnalyzed(InvokeInstruction instruction) {
+		for (Type argument : instruction.getArgumentTypes(constantPoolGen)) {
+			if (argument.toString().equals(classToAnalyze.getName()))
+				return true;
+		}
+		if (instruction.getReturnType(constantPoolGen).toString().equals(classToAnalyze.getName()))
+			return true;
+		return false;
+	}
 }

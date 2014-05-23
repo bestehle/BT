@@ -1,7 +1,5 @@
 package de.seerhein_lab.jic.analyzer;
 
-import static org.apache.bcel.Constants.CONSTRUCTOR_NAME;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -52,7 +50,6 @@ import de.seerhein_lab.jic.EvaluationResult.Kind;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.ThreeValueBoolean;
 import de.seerhein_lab.jic.Utils;
-import de.seerhein_lab.jic.analyzer.eval.EvaluationOnlyAnalyzer;
 import de.seerhein_lab.jic.analyzer.recursion.RecursionAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.cache.AnalysisCache.Check;
@@ -344,17 +341,9 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			return handleRecursion(targetMethodGen);
 		}
 
-		if (targetMethod.getMethod().getName().equals(CONSTRUCTOR_NAME)
-				&& targetMethod.getMethod().getArgumentTypes().length == 0
-				// && firstParam instanceof ReferenceSlot
-				&& !((ReferenceSlot) firstParam).getObject(heap).equals(heap.getThisInstance())) {
+		targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen, nowVisitedMethods,
+				methodInvocationDepth + 1);
 
-			targetMethodAnalyzer = new EvaluationOnlyAnalyzer(classContext, targetMethodGen,
-					nowVisitedMethods, depth, cache, methodInvocationDepth + 1);
-		} else {
-			targetMethodAnalyzer = getMethodAnalyzer(targetMethodGen, nowVisitedMethods,
-					methodInvocationDepth + 1);
-		}
 		methodResult = targetMethodAnalyzer.analyze(frame.getStack(), heap);
 		return methodResult;
 	}
@@ -1143,13 +1132,17 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	private void handleSpecialOrStaticInvocation(InvokeInstruction obj) {
 		QualifiedMethod targetMethod = getTargetMethod(obj);
 
-		if (targetMethod.getMethod().isNative()) {
+		if (targetMethod.getMethod().isNative() || !hasToBeAnalyzed(obj)) {
 			logger.fine(indentation + "Native method must be dealt with like virtual method.");
 
 			handleLatelyBoundMethod(obj);
 
 		} else
 			handleEarlyBoundMethod(obj, targetMethod);
+	}
+
+	protected boolean hasToBeAnalyzed(InvokeInstruction obj) {
+		return false;
 	}
 
 	/**
