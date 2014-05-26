@@ -234,11 +234,23 @@ public class ClassRepository {
 		Queue<QualifiedMethod> queue = new LinkedList<QualifiedMethod>(
 				classToCheck.getInstantiations());
 
+		logger.warning("Methods to Analyze " + queue.size());
+		for (QualifiedMethod qualifiedMethod : queue) {
+			logger.warning(qualifiedMethod.toString());
+		}
+
 		AnalysisCache analysisCache = new AnalysisCache();
 		HashSet<AnalysisResult> results = new HashSet<AnalysisResult>();
 
 		while (!queue.isEmpty()) {
 			QualifiedMethod method = queue.remove();
+
+			logger.warning(String
+					.format("\n###############################################################################\n"
+							+ "#         %-50s                  #"
+							+ "\n###############################################################################\n",
+							method.getJavaClass().getClassName() + "."
+									+ method.getMethod().getName()));
 
 			Type returnType = method.getMethod().getReturnType();
 			if (returnType instanceof ObjectType
