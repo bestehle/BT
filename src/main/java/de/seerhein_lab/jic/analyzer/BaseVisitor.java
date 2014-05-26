@@ -1132,11 +1132,13 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	private void handleSpecialOrStaticInvocation(InvokeInstruction obj) {
 		QualifiedMethod targetMethod = getTargetMethod(obj);
 
-		if (targetMethod.getMethod().isNative() || !hasToBeAnalyzed(obj)) {
+		if (targetMethod.getMethod().isNative()) {
 			logger.fine(indentation + "Native method must be dealt with like virtual method.");
-
 			handleLatelyBoundMethod(obj);
-
+		} else if (!hasToBeAnalyzed(obj)) {
+			logger.fine(indentation
+					+ "method doesn't need to be analyzed so it's handled like virtual method.");
+			handleLatelyBoundMethod(obj);
 		} else
 			handleEarlyBoundMethod(obj, targetMethod);
 	}
