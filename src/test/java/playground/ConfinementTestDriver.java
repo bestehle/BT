@@ -25,13 +25,16 @@ public class ConfinementTestDriver {
 			IOException {
 		logger = Utils.setUpLogger("ConfinementTestDriver", LOGFILEPATH, Level.ALL);
 
-		String class_name = "de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest";
-		String classToAnalyze = "de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest$TestClass";
-		// String classToAnalyze = "de.seerhein_lab.jic.vm.Heap";
+		// String class_name =
+		// "de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest";
+		// String classToAnalyze =
+		// "de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest$TestClass";
 
-		Set<JavaClass> classes = ClassRepository.getClassWithInnerClasses(class_name);
+		// Set<JavaClass> classes =
+		// ClassRepository.getClassWithInnerClasses(class_name);
 
-		// Collection<JavaClass> classes = getClasses("de.seerhein_lab.jic");
+		String classToAnalyze = "de.seerhein_lab.jic.analyzer.QualifiedMethod";
+		Collection<JavaClass> classes = ClassRepository.getClasses("de.seerhein_lab.jic");
 
 		Set<AnalysisResult> analysisResults = analyze(classToAnalyze, classes);
 
@@ -63,7 +66,7 @@ public class ConfinementTestDriver {
 
 		repository.analyzeClasses(classesToAnalyze);
 
-		return repository.analyzeMethods(repository.getClass(classToCheck));
+		return ClassRepository.analyzeMethods(repository.getClass(classToCheck));
 	}
 
 }

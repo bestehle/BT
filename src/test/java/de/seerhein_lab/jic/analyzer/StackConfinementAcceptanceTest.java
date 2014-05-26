@@ -38,7 +38,7 @@ public class StackConfinementAcceptanceTest {
 
 	@BindAnalyzerMethod
 	public static Collection<BugInstance> bindIsStackConfinement(ClassAnalyzer analyzer) {
-		return analyzer.isStackConfined();
+		return analyzer.isStackConfined("de.seerhein_lab.jic.analyzer");
 	}
 
 	@BugsExpected
@@ -77,7 +77,7 @@ public class StackConfinementAcceptanceTest {
 		}
 	}
 
-	@BugsExpected
+	@NoBugsExpected
 	public static class Story006_Array {
 		private TestClass[] array;
 
@@ -119,6 +119,15 @@ public class StackConfinementAcceptanceTest {
 
 		public void assign() {
 			Object o = new TestClass();
+			TestClassStatic.assignToStaticField(o);
+		}
+	}
+
+	@BugsExpected
+	public static class Story010b_InvokeMethod {
+
+		public void assign() {
+			TestClass o = new TestClass();
 			TestClassStatic.assignToStaticField(o);
 		}
 	}
@@ -190,6 +199,25 @@ public class StackConfinementAcceptanceTest {
 		}
 	}
 
+	@BugsExpected
+	public static class Story018_StoreFromReturn2 {
+		private TestClass field;
+
+		public void assign() {
+			field = TestClass.getInstance2();
+		}
+	}
+
+	@BugsExpected
+	public static class Story019_StoreAndReturn {
+		private TestClass field;
+
+		public TestClass assign() {
+			field = new TestClass();
+			return field;
+		}
+	}
+
 	private static class TestClass {
 		public Object[] array;
 		public Object klass;
@@ -198,6 +226,10 @@ public class StackConfinementAcceptanceTest {
 
 		public static TestClass getInstance() {
 			return new TestClass();
+		}
+
+		public static TestClass getInstance2() {
+			return getInstance();
 		}
 	}
 
