@@ -62,7 +62,8 @@ public final class JicDetector implements Detector {
 			return;
 
 		try {
-			Collection<BugInstance> bugs = new ClassAnalyzer(classContext, cache).isStackConfined();
+			Collection<BugInstance> bugs = new ClassAnalyzer(classContext, cache,
+					new ClassRepository()).isStackConfined();
 
 			for (BugInstance bug : bugs) {
 				reporter.reportBug(bug);

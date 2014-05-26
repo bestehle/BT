@@ -23,6 +23,7 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
+import de.seerhein_lab.jic.ClassRepository;
 import de.seerhein_lab.jic.analyzer.ClassAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import edu.umd.cs.findbugs.BugInstance;
@@ -91,7 +92,8 @@ public class ClassAnalyzerRunner extends Runner {
 
 		when(classContextMock.getJavaClass()).thenReturn(javaClass);
 
-		ClassAnalyzer analyzer = new ClassAnalyzer(classContextMock, new AnalysisCache());
+		ClassAnalyzer analyzer = new ClassAnalyzer(classContextMock, new AnalysisCache(),
+				new ClassRepository());
 
 		Collection<BugInstance> bugs = runCheckMethod(analyzer);
 

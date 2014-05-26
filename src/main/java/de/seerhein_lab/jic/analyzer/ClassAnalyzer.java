@@ -9,15 +9,11 @@ import net.jcip.annotations.ThreadSafe;
 
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
-import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.BasicType;
-import org.apache.bcel.generic.ConstantPoolGen;
-import org.apache.bcel.generic.MethodGen;
 
 import de.seerhein_lab.jic.AnalysisResult;
-import de.seerhein_lab.jic.EvaluationResult;
+import de.seerhein_lab.jic.ClassRepository;
 import de.seerhein_lab.jic.Utils;
-import de.seerhein_lab.jic.analyzer.confinement.StackConfinementAnalyzer;
 import de.seerhein_lab.jic.cache.AnalysisCache;
 import de.seerhein_lab.jic.vm.Heap;
 import edu.umd.cs.findbugs.BugCollection;
@@ -35,8 +31,9 @@ public final class ClassAnalyzer {
 	private final ClassHelper classHelper;
 	private final AnalysisCache cache;
 	protected static final Logger logger = Logger.getLogger("ClassAnalyzer");
+	private ClassRepository repository;
 
-	public ClassAnalyzer(ClassContext classContext, AnalysisCache cache) {
+	public ClassAnalyzer(ClassContext classContext, AnalysisCache cache, ClassRepository repository) {
 		if (classContext == null)
 			throw new NullPointerException("ClassContext must not be null.");
 
@@ -44,6 +41,7 @@ public final class ClassAnalyzer {
 		this.clazz = classContext.getJavaClass();
 		classHelper = new ClassHelper(clazz);
 		this.cache = cache;
+		this.repository = repository;
 	}
 
 	private Collection<BugInstance> allFieldsFinal() {
@@ -138,27 +136,56 @@ public final class ClassAnalyzer {
 	// return bugs.getCollection();
 	// }
 
+	public Collection<BugInstance> isStackConfined(String packageToAnalyze) {
+		SortedBugCollection bugs = new SortedBugCollection();
+
+		repository.analyzeClasses(ClassRepository.getClasses(packageToAnalyze));
+
+		Set<AnalysisResult> analysisResults = ClassRepository.analyzeMethodsInClass(repository
+				.getClass("de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest$TestClass"),
+				repository.getClass(clazz));
+
+		for (AnalysisResult analysisResult : analysisResults) {
+			bugs.addAll(analysisResult.getBugs());
+			// results.addAll(analysisResult.getResults());
+		}
+		return bugs.getCollection();
+	}
+
 	public Collection<BugInstance> isStackConfined() {
 		SortedBugCollection bugs = new SortedBugCollection();
 
-		for (Method method : clazz.getMethods()) {
-			MethodGen methodGen = new MethodGen(method, clazz.getClassName(), new ConstantPoolGen(
-					clazz.getConstantPool()));
+		ClassRepository repository = new ClassRepository();
 
-			BaseMethodAnalyzer methodAnalyzer = new StackConfinementAnalyzer(classContext,
-					methodGen, cache, 0, null);
+		repository.analyzeClass(clazz);
 
-			AnalysisResult result = methodAnalyzer.analyze();
-			bugs.addAll(result.getBugs());
+		Set<AnalysisResult> analysisResults = ClassRepository.analyzeMethods(repository
+				.getClass("de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest$TestClass"));
 
-			Set<EvaluationResult> results = result.getResults();
-
-			for (EvaluationResult evaluationResult : results) {
-				// evaluationResult.getHeap().
-			}
+		for (AnalysisResult analysisResult : analysisResults) {
+			bugs.addAll(analysisResult.getBugs());
+			// results.addAll(analysisResult.getResults());
 		}
-
 		return bugs.getCollection();
+
+		// for (Method method : clazz.getMethods()) {
+		// MethodGen methodGen = new MethodGen(method, clazz.getClassName(), new
+		// ConstantPoolGen(
+		// clazz.getConstantPool()));
+		//
+		// BaseMethodAnalyzer methodAnalyzer = new
+		// StackConfinementAnalyzer(classContext,
+		// methodGen, cache, 0, null);
+		//
+		// AnalysisResult result = methodAnalyzer.analyze();
+		// bugs.addAll(result.getBugs());
+		//
+		// Set<EvaluationResult> results = result.getResults();
+		//
+		// for (EvaluationResult evaluationResult : results) {
+		// // evaluationResult.getHeap().
+		// }
+		// }
 	}
 
 	// private Collection<BugInstance> stateUnmodifiable() {
