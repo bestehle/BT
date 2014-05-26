@@ -1145,10 +1145,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		return false;
 	}
 
-	protected boolean hasToBeAnalyzed(InvokeInstruction obj) {
-		return false;
-	}
-
 	/**
 	 * 10. CPInstruction <br>
 	 * 10.4. InvokeInstruction <br>
