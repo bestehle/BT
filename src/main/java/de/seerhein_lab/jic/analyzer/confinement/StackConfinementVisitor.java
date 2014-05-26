@@ -1,7 +1,9 @@
 package de.seerhein_lab.jic.analyzer.confinement;
 
+import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.CodeExceptionGen;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
@@ -27,7 +29,7 @@ import edu.umd.cs.findbugs.annotations.Confidence;
 import edu.umd.cs.findbugs.ba.ClassContext;
 
 public class StackConfinementVisitor extends BaseVisitor {
-	private DetailedClass classToAnalyze;
+	private DetailedClass classToCheck;
 
 	protected StackConfinementVisitor(ClassContext classContext, MethodGen methodGen, Frame frame,
 			Heap heap, ConstantPoolGen constantPoolGen, PC pc,
@@ -36,7 +38,7 @@ public class StackConfinementVisitor extends BaseVisitor {
 			AnalysisCache cache, int methodInvocationDepth, DetailedClass classToAnalyze) {
 		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
 				alreadyVisitedMethods, pc, exceptionHandlers, depth, cache, methodInvocationDepth);
-		this.classToAnalyze = classToAnalyze;
+		this.classToCheck = classToAnalyze;
 	}
 
 	@Override
@@ -48,7 +50,7 @@ public class StackConfinementVisitor extends BaseVisitor {
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int methodInvocationDepth) {
 		return new StackConfinementAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods,
-				depth, cache, methodInvocationDepth, classToAnalyze);
+				depth, cache, methodInvocationDepth, classToCheck);
 	}
 
 	// ******************************************************************//
@@ -57,6 +59,21 @@ public class StackConfinementVisitor extends BaseVisitor {
 
 	@Override
 	protected void detectVirtualMethodBug(ReferenceSlot argument) {
+		if (!(argument instanceof ReferenceSlot))
+			return;
+
+		HeapObject object = ((ReferenceSlot) argument).getObject(heap);
+
+		if (object == null || object instanceof UnknownObject)
+			return;
+
+		if (classToCheck != null && !object.getType().equals(classToCheck.getName()))
+			return;
+
+		logger.warning("StackConfinementBUG: " + object);
+		addBug("STACK_CONFINEMENT_BUG", Confidence.HIGH,
+				"instance is passed to a virtual method -> may be not stack confined",
+				pc.getCurrentInstruction());
 	}
 
 	@Override
@@ -88,7 +105,7 @@ public class StackConfinementVisitor extends BaseVisitor {
 		if (object == null || object instanceof UnknownObject)
 			return;
 
-		if (classToAnalyze != null && !object.getType().equals(classToAnalyze.getName()))
+		if (classToCheck != null && !object.getType().equals(classToCheck.getName()))
 			return;
 
 		logger.warning("StackConfinementBUG: " + object);
@@ -99,11 +116,31 @@ public class StackConfinementVisitor extends BaseVisitor {
 
 	@Override
 	protected boolean hasToBeAnalyzed(InvokeInstruction instruction) {
+		JavaClass[] interfaces = null;
+		JavaClass[] superClasses = null;
+		try {
+			interfaces = classToCheck.getJavaClass().getAllInterfaces();
+			superClasses = classToCheck.getJavaClass().getSuperClasses();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		Set<String> classes = new HashSet<String>();
+		classes.add(classToCheck.getName());
+
+		for (JavaClass javaClass : superClasses) {
+			classes.add(javaClass.getClassName());
+		}
+		for (JavaClass javaClass : interfaces) {
+			classes.add(javaClass.getClassName());
+		}
+
+		if (instruction.getMethodName(constantPoolGen).equals("<init>"))
+			return true;
 		for (Type argument : instruction.getArgumentTypes(constantPoolGen)) {
-			if (argument.toString().equals(classToAnalyze.getName()))
+			if (classes.contains(argument.toString()))
 				return true;
 		}
-		if (instruction.getReturnType(constantPoolGen).toString().equals(classToAnalyze.getName()))
+		if (classes.contains(instruction.getReturnType(constantPoolGen).toString()))
 			return true;
 		return false;
 	}
