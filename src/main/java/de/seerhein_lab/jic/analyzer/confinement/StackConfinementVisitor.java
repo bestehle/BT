@@ -70,7 +70,8 @@ public class StackConfinementVisitor extends BaseVisitor {
 		if (classToCheck != null && !object.getType().equals(classToCheck.getName()))
 			return;
 
-		logger.warning("StackConfinementBUG: " + object);
+		logger.warning("StackConfinementBUG in " + this.classContext.getJavaClass().getClassName()
+				+ object);
 		addBug("STACK_CONFINEMENT_BUG", Confidence.HIGH,
 				"instance is passed to a virtual method -> may be not stack confined",
 				pc.getCurrentInstruction());
@@ -93,7 +94,6 @@ public class StackConfinementVisitor extends BaseVisitor {
 
 	@Override
 	protected void detectAReturnBug(ReferenceSlot returnSlot) {
-		// TODO
 	}
 
 	private void detect(Slot value) {
@@ -108,7 +108,8 @@ public class StackConfinementVisitor extends BaseVisitor {
 		if (classToCheck != null && !object.getType().equals(classToCheck.getName()))
 			return;
 
-		logger.warning("StackConfinementBUG: " + object);
+		logger.warning("StackConfinementBUG in " + this.classContext.getJavaClass().getClassName()
+				+ object);
 		addBug("STACK_CONFINEMENT_BUG", Confidence.HIGH,
 				"instance is assigned to an object -> not stack confined",
 				pc.getCurrentInstruction());

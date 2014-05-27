@@ -300,8 +300,9 @@ public abstract class HeapObject {
 		if (this.equals(heap.getThisInstance()))
 			return "This";
 		if (this instanceof UnknownObject)
-			return getType() + ": UnknownObject";
-		return getType() + ": (" + String.valueOf(id).substring(0, 8) + ")";
+			return type + ": UnknownObject";
+		return type.substring(type.lastIndexOf(".") + 1, type.length()) + ": ("
+				+ String.valueOf(id).substring(0, 8) + ")";
 	}
 
 	/*
