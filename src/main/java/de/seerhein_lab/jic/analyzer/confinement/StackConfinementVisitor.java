@@ -116,6 +116,12 @@ public class StackConfinementVisitor extends BaseVisitor {
 
 	@Override
 	protected boolean hasToBeAnalyzed(InvokeInstruction instruction) {
+		if (instruction.getLoadClassType(constantPoolGen).getClassName()
+				.equals(classToCheck.getName()))
+			return true; // TODO Superklassen ???
+		if (instruction.getMethodName(constantPoolGen).equals("<init>"))
+			return true;
+
 		JavaClass[] interfaces = null;
 		JavaClass[] superClasses = null;
 		try {
@@ -134,14 +140,13 @@ public class StackConfinementVisitor extends BaseVisitor {
 			classes.add(javaClass.getClassName());
 		}
 
-		if (instruction.getMethodName(constantPoolGen).equals("<init>"))
-			return true;
 		for (Type argument : instruction.getArgumentTypes(constantPoolGen)) {
 			if (classes.contains(argument.toString()))
 				return true;
 		}
 		if (classes.contains(instruction.getReturnType(constantPoolGen).toString()))
 			return true;
+
 		return false;
 	}
 }
