@@ -300,9 +300,8 @@ public abstract class HeapObject {
 		if (this.equals(heap.getThisInstance()))
 			return "This";
 		if (this instanceof UnknownObject)
-			return (immutable ? "immutable" : "mutable") + "UnknownObject";
-		return (immutable ? "immutable" : "mutable") + "Internal ("
-				+ String.valueOf(id).substring(0, 13) + ")";
+			return getType() + ": UnknownObject";
+		return getType() + ": (" + String.valueOf(id).substring(0, 8) + ")";
 	}
 
 	/*
