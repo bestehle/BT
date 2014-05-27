@@ -1177,9 +1177,15 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		QualifiedMethod targetMethod = getTargetMethod(obj);
 
 		if ((targetMethod.getJavaClass().isFinal() || targetMethod.getMethod().isFinal())
-				&& !targetMethod.getMethod().isNative() && hasToBeAnalyzed(obj)) {
-			logger.fine(indentation + "Final virtual method can be analyzed.");
-			handleEarlyBoundMethod(obj, targetMethod);
+				&& !targetMethod.getMethod().isNative()) {
+			if (hasToBeAnalyzed(obj)) {
+				logger.fine(indentation + "Final virtual method can be analyzed.");
+				handleEarlyBoundMethod(obj, targetMethod);
+			} else {
+				logger.fine(indentation
+						+ "method doesn't need to be analyzed so it's handled like virtual method.");
+				handleLatelyBoundMethod(obj);
+			}
 		} else
 			handleLatelyBoundMethod(obj);
 	}
