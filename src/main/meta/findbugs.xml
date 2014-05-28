@@ -9,4 +9,6 @@
         <BugPattern type="PROPER_CONSTRUCTION_BUG" abbrev="PC" category="CORRECTNESS"/>
         <BugPattern type="SUBSEQUENT_IMMUTABILITY_BUG" abbrev="SIM" category="MT_CORRECTNESS"/>
         <BugPattern type="SUBSEQUENT_PROPER_CONSTRUCTION_BUG" abbrev="SPC" category="CORRECTNESS"/>
+        
+        <BugPattern type="STACK_CONFINEMENT_BUG" abbrev="SC" category="MT_CORRECTNESS"/>
 </FindbugsPlugin>

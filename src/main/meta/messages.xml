@@ -69,5 +69,17 @@ another improperly constructed  class.
 	<BugCode abbrev="SPC">Proper construction</BugCode>
 
 
+	<BugPattern type="STACK_CONFINEMENT_BUG">
+		<ShortDescription>Stack Confinement bug</ShortDescription>
+		<LongDescription>Stack Confinement bug: {0}</LongDescription>
+		<Details>
+<![CDATA[
+<p>The Instance isn't Stack Confined.
+</p>
+]]>
+		</Details>
+	</BugPattern>
+
+	<BugCode abbrev="SC">Stack Confinement</BugCode>
 
 </MessageCollection>
