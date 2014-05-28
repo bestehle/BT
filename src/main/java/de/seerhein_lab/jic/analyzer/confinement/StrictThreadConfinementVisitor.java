@@ -8,6 +8,7 @@ import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
 import de.seerhein_lab.jic.AnalysisResult;
+import de.seerhein_lab.jic.ClassRepository;
 import de.seerhein_lab.jic.DetailedClass;
 import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.Pair;
@@ -27,8 +28,8 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 public class StrictThreadConfinementVisitor extends BaseVisitor {
 	private DetailedClass classToAnalyze;
 
-	protected StrictThreadConfinementVisitor(ClassContext classContext, MethodGen methodGen, Frame frame,
-			Heap heap, ConstantPoolGen constantPoolGen, PC pc,
+	protected StrictThreadConfinementVisitor(ClassContext classContext, MethodGen methodGen,
+			Frame frame, Heap heap, ConstantPoolGen constantPoolGen, PC pc,
 			CodeExceptionGen[] exceptionHandlers, Set<QualifiedMethod> alreadyVisitedMethods,
 			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
 			AnalysisCache cache, int methodInvocationDepth, DetailedClass classToAnalyze) {
@@ -45,8 +46,8 @@ public class StrictThreadConfinementVisitor extends BaseVisitor {
 	@Override
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int methodInvocationDepth) {
-		return new StrictThreadConfinementAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods, depth,
-				cache, methodInvocationDepth, classToAnalyze);
+		return new StrictThreadConfinementAnalyzer(classContext, targetMethodGen,
+				alreadyVisitedMethods, depth, cache, methodInvocationDepth, classToAnalyze);
 	}
 
 	// ******************************************************************//
@@ -73,9 +74,11 @@ public class StrictThreadConfinementVisitor extends BaseVisitor {
 
 		HeapObject targetObject = targetReference.getObject(heap);
 
-		Set<QualifiedMethod> methods = DetailedClass.getClass(methodGen.getClassName())
+		ClassRepository repository = new ClassRepository();
+
+		Set<QualifiedMethod> methods = repository.getClass(methodGen.getClassName())
 				.getMethod(methodGen.getMethod().getName())
-				.getCallingMethodsWithInstantiation(DetailedClass.getClass(targetObject.getType()));
+				.getCallingMethodsWithInstantiation(repository.getClass(targetObject.getType()));
 
 		for (QualifiedMethod method : methods) {
 
@@ -83,7 +86,7 @@ public class StrictThreadConfinementVisitor extends BaseVisitor {
 					.getClassName(), new ConstantPoolGen(method.getJavaClass().getConstantPool()));
 
 			BaseMethodAnalyzer methodAnalyzer = new StrictThreadConfinementAnalyzer(classContext,
-					targetMethodGen, cache, 0, DetailedClass.getClass(targetObject.getType()));
+					targetMethodGen, cache, 0, repository.getClass(targetObject.getType()));
 
 			AnalysisResult results = methodAnalyzer.analyze();
 
