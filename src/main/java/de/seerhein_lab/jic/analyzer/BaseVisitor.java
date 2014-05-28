@@ -154,6 +154,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				classContext.getJavaClass());
 
 		bugInstance.addSourceLine(classContext, methodGen.getMethod(), instructionHandle);
+		bugInstance.addMethod(classContext.getJavaClass(), methodGen.getMethod());
 		bugs.add(bugInstance);
 
 	}
@@ -298,7 +299,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				cacheHits++;
 
 				methodResult = new AnalysisResult(useCachedResults(targetMethod), cache.get(
-						targetMethod).getBugs(getCheck()));
+						targetMethod).getBugs(getCheck()), targetMethod);
 
 			} else {
 				cacheMisses++;

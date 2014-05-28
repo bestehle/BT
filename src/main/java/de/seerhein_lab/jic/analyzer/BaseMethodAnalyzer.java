@@ -139,7 +139,8 @@ public abstract class BaseMethodAnalyzer {
 		logger.fine(Utils.formatLoggingOutput(this.methodInvocationDepth)
 				+ "^^^^^^^^^^^^^^^^^^^^^^^^^^");
 
-		return new AnalysisResult(visitor.getResult(), visitor.getBugs().getCollection());
+		return new AnalysisResult(visitor.getResult(), visitor.getBugs().getCollection(),
+				new QualifiedMethod(classContext.getJavaClass(), methodGen.getMethod()));
 	}
 
 }
