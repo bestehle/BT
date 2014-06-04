@@ -1,8 +1,4 @@
-# JIC - Java Immutability Checker
-
-[![Build Status](https://buildhive.cloudbees.com/job/Seitenbau/job/jca/badge/icon)](https://buildhive.cloudbees.com/job/Seitenbau/job/jca/)
-
-Project description -- to be done.
+# tcc - Thread Confinement Checker
 
 
 ## Tooling and Dependencies
@@ -18,7 +14,7 @@ Project description -- to be done.
  
 ## Build Project
 
- 1. Clone Project from github git clone https://github.com/seerhein-lab/jic.git
+ 1. Clone Project from github git clone https://github.com/seerhein-lab/tcc.git
  
  2. Import as Eclipse project mvn eclipse:eclipse and import as generic project. 
  
