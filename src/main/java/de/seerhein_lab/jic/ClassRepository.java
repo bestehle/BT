@@ -161,16 +161,6 @@ public class ClassRepository {
 		return classes;
 	}
 
-	/**
-	 * Scans all classes accessible from the context class loader which belong
-	 * to the given package and subpackages.
-	 * 
-	 * @param packageName
-	 *            The base package
-	 * @return The classes
-	 * @throws ClassNotFoundException
-	 * @throws IOException
-	 */
 	public static Collection<JavaClass> getClasses(String packageName) {
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -196,17 +186,6 @@ public class ClassRepository {
 		return classes;
 	}
 
-	/**
-	 * Recursive method used to find all classes in a given directory and
-	 * subdirs.
-	 * 
-	 * @param directory
-	 *            The base directory
-	 * @param packageName
-	 *            The package name for classes found inside the base directory
-	 * @return The classes
-	 * @throws ClassNotFoundException
-	 */
 	private static List<JavaClass> findClasses(File directory, String packageName) {
 		List<JavaClass> classes = new ArrayList<JavaClass>();
 

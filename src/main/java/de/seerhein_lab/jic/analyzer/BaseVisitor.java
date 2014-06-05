@@ -292,7 +292,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		AnalysisResult methodResult;
 
-		if (false && cache.isCacheable(targetMethod)) {
+		if (cache.isCacheable(targetMethod)) {
 			if (cache.contains(targetMethod) && cache.get(targetMethod).isCached(getCheck())) {
 				logger.fine(indentation + targetMethod
 						+ " already evaluated - taking result out of the cache");
@@ -1114,9 +1114,29 @@ public abstract class BaseVisitor extends SimpleVisitor {
 				instruction.getMethodName(constantPoolGen),
 				instruction.getArgumentTypes(constantPoolGen));
 
+		if (targetMethod == null)
+			return searchMethodInSuperClasses(instruction, targetClass);
+		else
+			return new QualifiedMethod(targetClass, targetMethod);
+	}
+
+	private QualifiedMethod searchMethodInSuperClasses(InvokeInstruction instruction,
+			JavaClass targetClass) throws AssertionError {
+		Method targetMethod = null;
 		while (targetMethod == null) {
 			try {
 				targetClass = targetClass.getSuperClass();
+				if (targetClass == null) {
+					for (JavaClass inter : Repository.lookupClass(
+							instruction.getLoadClassType(constantPoolGen).toString())
+							.getInterfaces()) {
+						targetMethod = new ClassHelper(inter).getMethod(
+								instruction.getMethodName(constantPoolGen),
+								instruction.getArgumentTypes(constantPoolGen));
+						if (targetMethod != null)
+							return new QualifiedMethod(inter, targetMethod);
+					}
+				}
 				targetMethod = new ClassHelper(targetClass).getMethod(
 						instruction.getMethodName(constantPoolGen),
 						instruction.getArgumentTypes(constantPoolGen));

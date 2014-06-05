@@ -2,6 +2,7 @@ package playground;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -30,12 +31,11 @@ public class ConfinementTestDriver {
 
 	public static void main(String[] args) throws ClassNotFoundException, SecurityException,
 			IOException {
-		logger = Utils.setUpLogger("ConfinementTestDriver", LOGFILEPATH, Level.SEVERE);
+		logger = Utils.setUpLogger("ConfinementTestDriver", LOGFILEPATH, Level.ALL);
 
 		// String class_name =
 		// "de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest";
-		// String classToAnalyze =
-		// "de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest$TestClass";
+		String classToAnalyze = "de.seerhein_lab.jic.AnalysisResult";
 
 		// Set<JavaClass> classes =
 		// ClassRepository.getClassWithInnerClasses(class_name);
@@ -43,13 +43,15 @@ public class ConfinementTestDriver {
 		// String classToAnalyze =
 		// "de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest$TestClass";
 		Collection<JavaClass> classes = ClassRepository.getClasses("de.seerhein_lab.jic");
+		// Collection<JavaClass> classes =
+		// ClassRepository.getClasses("org.apache");
 
-		// Set<AnalysisResult> analysisResults = analyze(classToAnalyze,
-		// classes);
+		// Collection<JavaClass> classes = ClassRepository.getClasses(args[1]);
 
-		analyzeAllClasses(classes);
+		Set<AnalysisResult> analysisResults = analyze(classToAnalyze, classes);
+		logResults(classToAnalyze, analysisResults);
 
-		// logResults(classToAnalyze, analysisResults);
+		// analyzeAllClasses(classes);
 
 	}
 
@@ -63,17 +65,24 @@ public class ConfinementTestDriver {
 	}
 
 	public static void analyzeAllClasses(Collection<JavaClass> classesToAnalyze) {
+		Date start = new Date();
+		logger.severe(start.toString());
+
 		ClassRepository repository = new ClassRepository();
 
 		repository.analyzeClasses(classesToAnalyze);
 
 		for (JavaClass javaClass : classesToAnalyze) {
 			try {
+				HeapObject.resetCounter();
 				logResults(javaClass.getClassName(), ClassRepository.analyzeMethods(repository
 						.getClass(javaClass.getClassName())));
 			} catch (EmercencyBrakeException e) {
 				notAnalyzedClasses.add(javaClass.getClassName());
-				HeapObject.resetCounter();
+
+			} catch (Exception e) {
+				notAnalyzedClasses.add(javaClass.getClassName());
+				System.err.println("ERREOR");
 			}
 		}
 
@@ -81,6 +90,9 @@ public class ConfinementTestDriver {
 		logSummary("NOT Stack Confined Classes", notStackConfinedClasses);
 		logSummary("NOT Instantiated Classes", notInstantiatedClasses);
 		logSummary("Not analyzed Classes: Class to Complex", notAnalyzedClasses);
+
+		Date end = new Date();
+		logger.severe(end.toString() + "\t[ " + (end.getTime() - start.getTime()) / 1000 + " s]");
 	}
 
 	private static void logResults(String classToAnalyze, Set<AnalysisResult> analysisResults) {
