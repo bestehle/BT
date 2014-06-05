@@ -245,12 +245,13 @@ public class ClassRepository {
 		while (!queue.isEmpty()) {
 			QualifiedMethod method = queue.remove();
 
-			logger.warning(String
-					.format("\n###############################################################################\n"
-							+ "#         %-50s                  #"
-							+ "\n###############################################################################\n",
-							method.getJavaClass().getClassName() + "."
-									+ method.getMethod().getName()));
+			// logger.warning(String
+			// .format("\n###############################################################################\n"
+			// + "#         %-50s                  #"
+			// +
+			// "\n###############################################################################\n",
+			// method.getJavaClass().getClassName() + "."
+			// + method.getMethod().getName()));
 
 			Type returnType = method.getMethod().getReturnType();
 			if (returnType instanceof ObjectType
