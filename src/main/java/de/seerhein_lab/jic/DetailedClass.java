@@ -34,19 +34,16 @@ public class DetailedClass {
 		if (targetMethod != null)
 			return targetMethod;
 
-		if (clazz.isInterface()) {
-			JavaClass[] interfaces = null;
-			try {
-				interfaces = clazz.getAllInterfaces();
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
-			int i = 0;
-			while (targetMethod == null) {
-				targetMethod = repository.getClass(interfaces[i]).methods.get(method);
-				i++;
-			}
-			return targetMethod;
+		JavaClass[] interfaces = null;
+		try {
+			interfaces = clazz.getAllInterfaces();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		for (int i = 0; i < interfaces.length; i++) {
+			targetMethod = repository.getClass(interfaces[i]).methods.get(method);
+			if (targetMethod != null)
+				return targetMethod;
 		}
 
 		while (targetMethod == null) {
