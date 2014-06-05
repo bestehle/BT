@@ -68,7 +68,7 @@ public final class UnknownObject extends HeapObject {
 	 */
 	@Override
 	protected HeapObject deepCopy(Heap heap, Map<HeapObject, HeapObject> visited) {
-		return null; // TODO
+		return heap.newUnknownObject(this.isImmutable(), this.getType());
 		// return heap.getExternalObject(this.isImmutable());
 	}
 
@@ -105,7 +105,7 @@ public final class UnknownObject extends HeapObject {
 	@Override
 	public boolean isStackConfined() {
 		throw new AssertionError("UnknownObject StackConfinement");
-		//TODO
+		// TODO
 	}
 
 	/*
