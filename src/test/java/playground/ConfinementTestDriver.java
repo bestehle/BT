@@ -13,6 +13,7 @@ import de.seerhein_lab.jic.AnalysisResult;
 import de.seerhein_lab.jic.ClassRepository;
 import de.seerhein_lab.jic.EmercencyBrakeException;
 import de.seerhein_lab.jic.Utils;
+import de.seerhein_lab.jic.vm.HeapObject;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.MethodAnnotation;
 import edu.umd.cs.findbugs.StringAnnotation;
@@ -52,7 +53,42 @@ public class ConfinementTestDriver {
 
 	}
 
+	public static Set<AnalysisResult> analyze(String classToCheck,
+			Collection<JavaClass> classesToAnalyze) {
+		ClassRepository repository = new ClassRepository();
+
+		repository.analyzeClasses(classesToAnalyze);
+
+		return ClassRepository.analyzeMethods(repository.getClass(classToCheck));
+	}
+
+	public static void analyzeAllClasses(Collection<JavaClass> classesToAnalyze) {
+		ClassRepository repository = new ClassRepository();
+
+		repository.analyzeClasses(classesToAnalyze);
+
+		for (JavaClass javaClass : classesToAnalyze) {
+			try {
+				logResults(javaClass.getClassName(), ClassRepository.analyzeMethods(repository
+						.getClass(javaClass.getClassName())));
+			} catch (EmercencyBrakeException e) {
+				notAnalyzedClasses.add(javaClass.getClassName());
+				HeapObject.resetCounter();
+			}
+		}
+
+		logSummary("Stack Confined Classes", stackConfinedClasses);
+		logSummary("NOT Stack Confined Classes", notStackConfinedClasses);
+		logSummary("NOT Instantiated Classes", notInstantiatedClasses);
+		logSummary("Not analyzed Classes: Class to Complex", notAnalyzedClasses);
+	}
+
 	private static void logResults(String classToAnalyze, Set<AnalysisResult> analysisResults) {
+		if (analysisResults.isEmpty()) {
+			notInstantiatedClasses.add(classToAnalyze);
+			return;
+		}
+
 		boolean stackConfined = true;
 		logger.severe(String
 				.format("\n###############################################################################\n"
@@ -84,42 +120,11 @@ public class ConfinementTestDriver {
 						classToAnalyze
 								+ (stackConfined ? ":   Stack Confined" : ":   NOT Stack Confined")));
 
-		if (analysisResults.isEmpty())
-			notInstantiatedClasses.add(classToAnalyze);
-		else if (stackConfined)
+		if (stackConfined)
 			stackConfinedClasses.add(classToAnalyze);
 		else
 			notStackConfinedClasses.add(classToAnalyze);
 
-	}
-
-	public static Set<AnalysisResult> analyze(String classToCheck,
-			Collection<JavaClass> classesToAnalyze) {
-		ClassRepository repository = new ClassRepository();
-
-		repository.analyzeClasses(classesToAnalyze);
-
-		return ClassRepository.analyzeMethods(repository.getClass(classToCheck));
-	}
-
-	public static void analyzeAllClasses(Collection<JavaClass> classesToAnalyze) {
-		ClassRepository repository = new ClassRepository();
-
-		repository.analyzeClasses(classesToAnalyze);
-
-		for (JavaClass javaClass : classesToAnalyze) {
-			try {
-				logResults(javaClass.getClassName(), ClassRepository.analyzeMethods(repository
-						.getClass(javaClass.getClassName())));
-			} catch (EmercencyBrakeException e) {
-				notAnalyzedClasses.add(javaClass.getClassName());
-			}
-		}
-
-		logSummary("Stack Confined Classes", stackConfinedClasses);
-		logSummary("NOT Stack Confined Classes", notStackConfinedClasses);
-		logSummary("NOT Instantiated Classes", notInstantiatedClasses);
-		logSummary("Not analyzed Classes", notAnalyzedClasses);
 	}
 
 	private static void logSummary(String list, Set<String> classes) {

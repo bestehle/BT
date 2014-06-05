@@ -290,6 +290,10 @@ public abstract class HeapObject {
 		return type;
 	}
 
+	public static void resetCounter() {
+		objects = 0;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
