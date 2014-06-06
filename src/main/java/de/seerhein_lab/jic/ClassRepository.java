@@ -212,6 +212,7 @@ public class ClassRepository {
 	public static Set<AnalysisResult> analyzeMethods(DetailedClass classToCheck) {
 		Queue<QualifiedMethod> queue = new LinkedList<QualifiedMethod>(
 				classToCheck.getInstantiations());
+		Set<QualifiedMethod> analyzed = new HashSet<QualifiedMethod>();
 
 		logger.warning("Methods to Analyze " + queue.size());
 		for (QualifiedMethod qualifiedMethod : queue) {
@@ -223,6 +224,7 @@ public class ClassRepository {
 
 		while (!queue.isEmpty()) {
 			QualifiedMethod method = queue.remove();
+			analyzed.add(method);
 
 			// logger.warning(String
 			// .format("\n###############################################################################\n"
@@ -235,7 +237,10 @@ public class ClassRepository {
 			Type returnType = method.getMethod().getReturnType();
 			if (returnType instanceof ObjectType
 					&& ((ObjectType) returnType).getClassName().equals(classToCheck.getName())) {
-				queue.addAll(method.getCallingMethods());
+				for (QualifiedMethod m : method.getCallingMethods()) {
+					if (!analyzed.contains(m))
+						queue.add(m);
+				}
 			}
 
 			ClassContext classContextMock = mock(ClassContext.class);
