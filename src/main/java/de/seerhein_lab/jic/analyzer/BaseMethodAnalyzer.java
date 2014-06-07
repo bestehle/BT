@@ -13,6 +13,7 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
 import de.seerhein_lab.jic.AnalysisResult;
+import de.seerhein_lab.jic.ClassRepository;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.Utils;
 import de.seerhein_lab.jic.cache.AnalysisCache;
@@ -35,10 +36,11 @@ public abstract class BaseMethodAnalyzer {
 	protected final MethodGen methodGen;
 	protected final CodeExceptionGen[] exceptionHandlers;
 	protected final AnalysisCache cache;
+	protected final ClassRepository repository;
 
 	protected BaseMethodAnalyzer(ClassContext classContext, MethodGen methodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache,
-			int methodInvocationDepth) {
+			int methodInvocationDepth, ClassRepository repository) {
 		if (classContext == null || methodGen == null || alreadyVisitedMethods == null)
 			throw new AssertionError("Params must not be null.");
 
@@ -54,6 +56,7 @@ public abstract class BaseMethodAnalyzer {
 		this.depth = depth + 1;
 		this.cache = cache;
 		this.methodInvocationDepth = methodInvocationDepth;
+		this.repository = repository;
 	}
 
 	protected abstract BaseVisitor getInstructionVisitor(Frame frame, Heap heap, PC pc,

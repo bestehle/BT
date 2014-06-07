@@ -15,6 +15,7 @@ public class DetailedClass {
 	private final JavaClass clazz;
 	private final Map<String, QualifiedMethod> methods = new HashMap<String, QualifiedMethod>();
 	private final Set<QualifiedMethod> instantiations = new HashSet<QualifiedMethod>();
+	private final Set<DetailedClass> implementations = new HashSet<DetailedClass>();
 	private final ClassRepository repository;
 
 	DetailedClass(JavaClass clazz, ClassRepository repository) {
@@ -72,6 +73,14 @@ public class DetailedClass {
 
 	public void addInstantiation(QualifiedMethod method) {
 		instantiations.add(method);
+	}
+
+	public Set<DetailedClass> getImplementations() {
+		return implementations;
+	}
+
+	public void addImplementation(DetailedClass method) {
+		implementations.add(method);
 	}
 
 	public String getName() {

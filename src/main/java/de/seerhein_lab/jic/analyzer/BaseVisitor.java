@@ -45,6 +45,8 @@ import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 
 import de.seerhein_lab.jic.AnalysisResult;
+import de.seerhein_lab.jic.ClassRepository;
+import de.seerhein_lab.jic.DetailedClass;
 import de.seerhein_lab.jic.EvaluationResult;
 import de.seerhein_lab.jic.EvaluationResult.Kind;
 import de.seerhein_lab.jic.Pair;
@@ -109,6 +111,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 	protected Set<EvaluationResult> result = new HashSet<EvaluationResult>();
 	public static long cacheMisses = 0;
 	public static long cacheHits = 0;
+	protected final ClassRepository repository;
 
 	protected abstract BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int methodInvocationDepth);
@@ -128,7 +131,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 			ConstantPoolGen constantPoolGen, Set<Pair<InstructionHandle, Boolean>> alreadyVisited,
 			Set<QualifiedMethod> alreadyVisitedMethods, PC pc,
 			CodeExceptionGen[] exceptionHandlers, int depth, AnalysisCache cache,
-			int methodInvocationDepth) {
+			int methodInvocationDepth, ClassRepository repository) {
 		super(frame, heap, constantPoolGen, pc, depth, methodInvocationDepth);
 
 		this.classContext = classContext;
@@ -137,6 +140,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		this.alreadyVisitedMethods = alreadyVisitedMethods;
 		this.exceptionHandlers = exceptionHandlers;
 		this.cache = cache;
+		this.repository = repository;
 	}
 
 	public BugCollection getBugs() {
@@ -292,37 +296,42 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		AnalysisResult methodResult;
 
-		if (cache.isCacheable(targetMethod)) {
-			if (cache.contains(targetMethod) && cache.get(targetMethod).isCached(getCheck())) {
-				logger.fine(indentation + targetMethod
-						+ " already evaluated - taking result out of the cache");
-				cacheHits++;
+		// if (cache.isCacheable(targetMethod)) {
+		// if (cache.contains(targetMethod) &&
+		// cache.get(targetMethod).isCached(getCheck())) {
+		// logger.fine(indentation + targetMethod
+		// + " already evaluated - taking result out of the cache");
+		// cacheHits++;
+		//
+		// methodResult = new AnalysisResult(useCachedResults(targetMethod),
+		// cache.get(
+		// targetMethod).getBugs(getCheck()), targetMethod);
+		//
+		// } else {
+		// cacheMisses++;
+		//
+		// int stackOffset = 0;
+		// for (Type argument : targetMethod.getMethod().getArgumentTypes())
+		// stackOffset += argument.getSize();
+		//
+		// Slot objectUnderConstruction = frame.getStack().get(
+		// frame.getStack().size() - 1 - stackOffset);
+		// methodResult = analyzeMethod(targetMethod, targetMethodGen,
+		// alreadyVisitedMethods,
+		// objectUnderConstruction);
+		//
+		// cacheResults(targetMethodGen, targetMethod, methodResult,
+		// objectUnderConstruction);
+		// }
+		// } else {
 
-				methodResult = new AnalysisResult(useCachedResults(targetMethod), cache.get(
-						targetMethod).getBugs(getCheck()), targetMethod);
+		cacheMisses++;
 
-			} else {
-				cacheMisses++;
+		Slot firstParam = frame.getStack().size() == 0 ? null : frame.getStack().peek();
+		methodResult = analyzeMethod(targetMethod, targetMethodGen, alreadyVisitedMethods,
+				firstParam);
 
-				int stackOffset = 0;
-				for (Type argument : targetMethod.getMethod().getArgumentTypes())
-					stackOffset += argument.getSize();
-
-				Slot objectUnderConstruction = frame.getStack().get(
-						frame.getStack().size() - 1 - stackOffset);
-				methodResult = analyzeMethod(targetMethod, targetMethodGen, alreadyVisitedMethods,
-						objectUnderConstruction);
-
-				cacheResults(targetMethodGen, targetMethod, methodResult, objectUnderConstruction);
-			}
-		} else {
-			cacheMisses++;
-
-			Slot firstParam = frame.getStack().size() == 0 ? null : frame.getStack().peek();
-			methodResult = analyzeMethod(targetMethod, targetMethodGen, alreadyVisitedMethods,
-					firstParam);
-
-		}
+		// }
 
 		wrapNestedBugs(targetMethod, methodResult.getBugs());
 		continueWithResults(methodResult.getResults());
@@ -355,7 +364,7 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		logger.fine(indentation + "\tRecursion found: Get result of recursive call.");
 
 		BaseMethodAnalyzer recursionAnalyzer = new RecursionAnalyzer(classContext, targetMethodGen,
-				alreadyVisitedMethods, depth, cache, methodInvocationDepth + 1);
+				alreadyVisitedMethods, depth, cache, methodInvocationDepth + 1, repository);
 
 		AnalysisResult result = recursionAnalyzer.analyze(frame.getStack(), heap);
 		logger.fine(indentation + "Recursion results: " + result.getResults());
@@ -368,27 +377,42 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		logger.finest(indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
 				+ obj.getMethodName(constantPoolGen) + obj.getSignature(constantPoolGen));
 
-		for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
-			Slot argument = frame.getStack().pop();
-			if (argument instanceof ReferenceSlot) {
-				ReferenceSlot reference = (ReferenceSlot) argument;
-				// check for bugs
-				detectVirtualMethodBug(reference);
-				heap.publish(reference.getObject(heap));
+		QualifiedMethod targetMethod = getTargetMethod(obj);
+
+		if (!targetMethod.getJavaClass().getClassName().equals("java.lang.Object")) {
+			if (targetMethod.getMethod().getCode() != null)
+				handleEarlyBoundMethod(obj, targetMethod);
+			for (DetailedClass clazz : repository.getClass(targetMethod.getJavaClass())
+					.getImplementations()) {
+				if (targetMethod.getMethod().getCode() != null)
+					handleEarlyBoundMethod(obj, clazz.getMethod(obj.getMethodName(constantPoolGen)));
 			}
 		}
 
-		Slot returnValue = Slot.getDefaultSlotInstance(obj.getReturnType(constantPoolGen));
+		pc.invalidate();
 
-		// return external reference if returnType reference is expected
-		if (returnValue instanceof ReferenceSlot)
-			returnValue = new ReferenceSlot(heap.newUnknownObjectOfStaticType(obj
-					.getReturnType(constantPoolGen)));
-
-		// works also for void results, because number of required slots = 0
-		frame.getStack().pushByRequiredSize(returnValue);
-
-		pc.advance();
+		// for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
+		// Slot argument = frame.getStack().pop();
+		// if (argument instanceof ReferenceSlot) {
+		// ReferenceSlot reference = (ReferenceSlot) argument;
+		// // check for bugs
+		// detectVirtualMethodBug(reference);
+		// heap.publish(reference.getObject(heap));
+		// }
+		// }
+		//
+		// Slot returnValue =
+		// Slot.getDefaultSlotInstance(obj.getReturnType(constantPoolGen));
+		//
+		// // return external reference if returnType reference is expected
+		// if (returnValue instanceof ReferenceSlot)
+		// returnValue = new ReferenceSlot(heap.newUnknownObjectOfStaticType(obj
+		// .getReturnType(constantPoolGen)));
+		//
+		// // works also for void results, because number of required slots = 0
+		// frame.getStack().pushByRequiredSize(returnValue);
+		//
+		// pc.advance();
 	}
 
 	// ******************************************************************//

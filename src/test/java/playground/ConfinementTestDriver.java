@@ -31,11 +31,11 @@ public class ConfinementTestDriver {
 
 	public static void main(String[] args) throws ClassNotFoundException, SecurityException,
 			IOException {
-		logger = Utils.setUpLogger("ConfinementTestDriver", LOGFILEPATH, Level.ALL);
+		logger = Utils.setUpLogger("ConfinementTestDriver", LOGFILEPATH, Level.SEVERE);
 
 		// String class_name =
 		// "de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest";
-		String classToAnalyze = "de.seerhein_lab.jic.AnalysisResult";
+		// String classToAnalyze = "de.seerhein_lab.jic.AnalysisResult";
 
 		// Set<JavaClass> classes =
 		// ClassRepository.getClassWithInnerClasses(class_name);
@@ -48,10 +48,11 @@ public class ConfinementTestDriver {
 
 		// Collection<JavaClass> classes = ClassRepository.getClasses(args[1]);
 
-		Set<AnalysisResult> analysisResults = analyze(classToAnalyze, classes);
-		logResults(classToAnalyze, analysisResults);
+		// Set<AnalysisResult> analysisResults = analyze(classToAnalyze,
+		// classes);
+		// logResults(classToAnalyze, analysisResults);
 
-		// analyzeAllClasses(classes);
+		analyzeAllClasses(classes);
 
 	}
 
@@ -61,7 +62,7 @@ public class ConfinementTestDriver {
 
 		repository.analyzeClasses(classesToAnalyze);
 
-		return ClassRepository.analyzeMethods(repository.getClass(classToCheck));
+		return repository.analyzeMethods(repository.getClass(classToCheck));
 	}
 
 	public static void analyzeAllClasses(Collection<JavaClass> classesToAnalyze) {
@@ -75,15 +76,15 @@ public class ConfinementTestDriver {
 		for (JavaClass javaClass : classesToAnalyze) {
 			try {
 				HeapObject.resetCounter();
-				logResults(javaClass.getClassName(), ClassRepository.analyzeMethods(repository
-						.getClass(javaClass.getClassName())));
+				logResults(javaClass.getClassName(),
+						repository.analyzeMethods(repository.getClass(javaClass.getClassName())));
 			} catch (EmercencyBrakeException e) {
 				notAnalyzedClasses.add(javaClass.getClassName());
 
-			} catch (Exception e) {
-				notAnalyzedClasses.add(javaClass.getClassName());
-				System.err.println("ERREOR");
-			}
+			} // catch (Exception e) {
+			// notAnalyzedClasses.add(javaClass.getClassName());
+			// logger.severe("FEHLER : " + e);
+			// }
 		}
 
 		logSummary("Stack Confined Classes", stackConfinedClasses);

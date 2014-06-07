@@ -141,7 +141,7 @@ public final class ClassAnalyzer {
 
 		repository.analyzeClasses(ClassRepository.getClasses(packageToAnalyze));
 
-		Set<AnalysisResult> analysisResults = ClassRepository.analyzeMethodsInClass(repository
+		Set<AnalysisResult> analysisResults = repository.analyzeMethodsInClass(repository
 				.getClass("de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest$TestClass"),
 				repository.getClass(clazz));
 
@@ -159,7 +159,7 @@ public final class ClassAnalyzer {
 
 		repository.analyzeClass(clazz);
 
-		Set<AnalysisResult> analysisResults = ClassRepository.analyzeMethods(repository
+		Set<AnalysisResult> analysisResults = repository.analyzeMethods(repository
 				.getClass("de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest$TestClass"));
 
 		for (AnalysisResult analysisResult : analysisResults) {

@@ -80,6 +80,8 @@ public class ClassRepository {
 		analyzedClasses.add(jClazz.getClassName());
 		DetailedClass clazz = getClass(jClazz);
 
+		addImplementationToSuperClasses(jClazz, clazz);
+
 		for (Method method : jClazz.getMethods()) {
 
 			MethodGen methodGen = new MethodGen(method, jClazz.getClassName(), new ConstantPoolGen(
@@ -112,6 +114,24 @@ public class ClassRepository {
 					// + instruction.getMethodName(constantPool));
 				}
 			}
+		}
+	}
+
+	private void addImplementationToSuperClasses(JavaClass jClazz, DetailedClass clazz) {
+		JavaClass[] interfaces = null;
+		JavaClass[] superClasses = null;
+		try {
+			interfaces = jClazz.getAllInterfaces();
+			superClasses = jClazz.getSuperClasses();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		for (JavaClass javaClass : superClasses) {
+			getClass(javaClass).addImplementation(clazz);
+		}
+		for (JavaClass javaClass : interfaces) {
+			getClass(javaClass).addImplementation(clazz);
 		}
 	}
 
@@ -209,7 +229,7 @@ public class ClassRepository {
 		return classes;
 	}
 
-	public static Set<AnalysisResult> analyzeMethods(DetailedClass classToCheck) {
+	public Set<AnalysisResult> analyzeMethods(DetailedClass classToCheck) {
 		Queue<QualifiedMethod> queue = new LinkedList<QualifiedMethod>(
 				classToCheck.getInstantiations());
 		Set<QualifiedMethod> analyzed = new HashSet<QualifiedMethod>();
@@ -250,14 +270,14 @@ public class ClassRepository {
 					.getClassName(), new ConstantPoolGen(method.getJavaClass().getConstantPool()));
 
 			BaseMethodAnalyzer methodAnalyzer = new StackConfinementAnalyzer(classContextMock,
-					methodGen, analysisCache, 0, classToCheck);
+					methodGen, analysisCache, 0, classToCheck, this);
 
 			results.add(methodAnalyzer.analyze());
 		}
 		return results;
 	}
 
-	public static Set<AnalysisResult> analyzeMethodsInClass(DetailedClass classToCheck,
+	public Set<AnalysisResult> analyzeMethodsInClass(DetailedClass classToCheck,
 			DetailedClass classToAnalyze) {
 
 		Queue<QualifiedMethod> queue = new LinkedList<QualifiedMethod>(
@@ -285,7 +305,7 @@ public class ClassRepository {
 					.getClassName(), new ConstantPoolGen(method.getJavaClass().getConstantPool()));
 
 			BaseMethodAnalyzer methodAnalyzer = new StackConfinementAnalyzer(classContextMock,
-					methodGen, analysisCache, 0, classToCheck);
+					methodGen, analysisCache, 0, classToCheck, this);
 
 			results.add(methodAnalyzer.analyze());
 		}

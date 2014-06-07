@@ -8,6 +8,7 @@ import net.jcip.annotations.ThreadSafe;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 
+import de.seerhein_lab.jic.ClassRepository;
 import de.seerhein_lab.jic.DetailedClass;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
@@ -24,18 +25,20 @@ import edu.umd.cs.findbugs.ba.ClassContext;
 public final class StrictThreadConfinementAnalyzer extends BaseMethodAnalyzer {
 	private DetailedClass classToAnalyze;
 
-	public StrictThreadConfinementAnalyzer(ClassContext classContext, MethodGen methodGen, AnalysisCache cache,
-			int methodInvocationDepth, DetailedClass classToAnalyze) {
+	public StrictThreadConfinementAnalyzer(ClassContext classContext, MethodGen methodGen,
+			AnalysisCache cache, int methodInvocationDepth, DetailedClass classToAnalyze,
+			ClassRepository repository) {
 		this(classContext, methodGen, new HashSet<QualifiedMethod>(), -1, cache,
-				methodInvocationDepth, classToAnalyze);
+				methodInvocationDepth, classToAnalyze, repository);
 		alreadyVisitedMethods.add(new QualifiedMethod(classContext.getJavaClass(), methodGen
 				.getMethod()));
 	}
 
 	public StrictThreadConfinementAnalyzer(ClassContext classContext, MethodGen methodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int depth, AnalysisCache cache,
-			int methodInvocationDepth, DetailedClass classToAnalyze) {
-		super(classContext, methodGen, alreadyVisitedMethods, depth, cache, methodInvocationDepth);
+			int methodInvocationDepth, DetailedClass classToAnalyze, ClassRepository repository) {
+		super(classContext, methodGen, alreadyVisitedMethods, depth, cache, methodInvocationDepth,
+				repository);
 		this.classToAnalyze = classToAnalyze;
 	}
 
@@ -43,7 +46,7 @@ public final class StrictThreadConfinementAnalyzer extends BaseMethodAnalyzer {
 			Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch) {
 		return new StrictThreadConfinementVisitor(classContext, methodGen, frame, heap,
 				methodGen.getConstantPool(), pc, exceptionHandlers, alreadyVisitedMethods, depth,
-				alreadyVisitedIfBranch, cache, methodInvocationDepth, classToAnalyze);
+				alreadyVisitedIfBranch, cache, methodInvocationDepth, classToAnalyze, repository);
 	}
 
 	@Override

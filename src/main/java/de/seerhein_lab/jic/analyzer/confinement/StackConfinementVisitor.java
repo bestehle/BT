@@ -11,6 +11,7 @@ import org.apache.bcel.generic.InvokeInstruction;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 
+import de.seerhein_lab.jic.ClassRepository;
 import de.seerhein_lab.jic.DetailedClass;
 import de.seerhein_lab.jic.Pair;
 import de.seerhein_lab.jic.analyzer.BaseMethodAnalyzer;
@@ -35,9 +36,11 @@ public class StackConfinementVisitor extends BaseVisitor {
 			Heap heap, ConstantPoolGen constantPoolGen, PC pc,
 			CodeExceptionGen[] exceptionHandlers, Set<QualifiedMethod> alreadyVisitedMethods,
 			int depth, Set<Pair<InstructionHandle, Boolean>> alreadyVisitedIfBranch,
-			AnalysisCache cache, int methodInvocationDepth, DetailedClass classToAnalyze) {
+			AnalysisCache cache, int methodInvocationDepth, DetailedClass classToAnalyze,
+			ClassRepository repository) {
 		super(classContext, methodGen, frame, heap, constantPoolGen, alreadyVisitedIfBranch,
-				alreadyVisitedMethods, pc, exceptionHandlers, depth, cache, methodInvocationDepth);
+				alreadyVisitedMethods, pc, exceptionHandlers, depth, cache, methodInvocationDepth,
+				repository);
 		this.classToCheck = classToAnalyze;
 	}
 
@@ -50,7 +53,7 @@ public class StackConfinementVisitor extends BaseVisitor {
 	protected BaseMethodAnalyzer getMethodAnalyzer(MethodGen targetMethodGen,
 			Set<QualifiedMethod> alreadyVisitedMethods, int methodInvocationDepth) {
 		return new StackConfinementAnalyzer(classContext, targetMethodGen, alreadyVisitedMethods,
-				depth, cache, methodInvocationDepth, classToCheck);
+				depth, cache, methodInvocationDepth, classToCheck, repository);
 	}
 
 	// ******************************************************************//
