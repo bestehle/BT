@@ -379,13 +379,39 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 		QualifiedMethod targetMethod = getTargetMethod(obj);
 
+		Set<QualifiedMethod> methodsToAnalyze = new HashSet<QualifiedMethod>();
+
 		if (!targetMethod.getJavaClass().getClassName().equals("java.lang.Object")) {
 			if (targetMethod.getMethod().getCode() != null)
-				handleEarlyBoundMethod(obj, targetMethod);
+				methodsToAnalyze.add(targetMethod);
 			for (DetailedClass clazz : repository.getClass(targetMethod.getJavaClass())
 					.getImplementations()) {
 				if (targetMethod.getMethod().getCode() != null)
-					handleEarlyBoundMethod(obj, clazz.getMethod(obj.getMethodName(constantPoolGen)));
+					methodsToAnalyze.add(clazz.getMethod(obj.getMethodName(constantPoolGen)));
+			}
+		}
+
+		if (methodsToAnalyze.size() == 1)
+			handleEarlyBoundMethod(obj, methodsToAnalyze.iterator().next());
+		else {
+			for (QualifiedMethod method : methodsToAnalyze) {
+
+				MethodGen methodGen = new MethodGen(method.getMethod(), method.getJavaClass()
+						.getClassName(), new ConstantPoolGen(method.getJavaClass()
+						.getConstantPool()));
+
+				AnalysisResult methodResult;
+
+				cacheMisses++;
+
+				BaseMethodAnalyzer methodAnalyzer = getMethodAnalyzer(methodGen,
+						alreadyVisitedMethods, methodInvocationDepth);
+
+				Frame targetFrame = new Frame(frame);
+				methodResult = methodAnalyzer.analyze(targetFrame.getStack(), new Heap(heap));
+
+				wrapNestedBugs(targetMethod, methodResult.getBugs());
+				continueWithResults(methodResult.getResults());
 			}
 		}
 
