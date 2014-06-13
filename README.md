@@ -18,6 +18,15 @@
  
  2. Import as Eclipse project mvn eclipse:eclipse and import as generic project. 
  
+## Usage
+
+Start ConfinementTestDriver with the program package and the Class to check, if only one class should be checked.
+
+	ConfinementTestDriver package [classToCheck]
+	
+The specified package has to be on the classpath.
+
+
 ## LICENSE 
  
  Copyright 2012 HTWG Konstanz and Seitenbau
