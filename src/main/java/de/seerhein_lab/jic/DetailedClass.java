@@ -49,6 +49,8 @@ public class DetailedClass {
 
 		while (targetMethod == null) {
 			try {
+				if (clazz.getClassName().equals("java.lang.Object"))
+					break;
 				targetMethod = repository.getClass(clazz.getSuperClass()).getMethod(method);
 			} catch (ClassNotFoundException e) {
 				throw new AssertionError("targetMethod " + method + " not found in " + clazz

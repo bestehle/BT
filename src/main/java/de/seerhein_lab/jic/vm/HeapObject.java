@@ -19,7 +19,7 @@ import de.seerhein_lab.jic.EmercencyBrakeException;
  * links).
  */
 public abstract class HeapObject {
-	private final static int HEAP_EMERCENCY_BREAK = 200000;
+	private final static int HEAP_EMERCENCY_BREAK = 1600000;
 
 	public static long objects = 0;
 	private final UUID id;

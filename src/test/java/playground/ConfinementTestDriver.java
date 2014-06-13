@@ -33,27 +33,28 @@ public class ConfinementTestDriver {
 			IOException {
 		logger = Utils.setUpLogger("ConfinementTestDriver", LOGFILEPATH, Level.SEVERE);
 
-		// String class_name =
-		// "de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest";
-		// String classToAnalyze = "de.seerhein_lab.jic.AnalysisResult";
+		if (args.length < 1 || args.length > 2) {
+			System.err.println("usage: package [classToCheck]");
+			return;
+		}
 
-		// Set<JavaClass> classes =
-		// ClassRepository.getClassWithInnerClasses(class_name);
+		Date start = new Date();
+		logger.severe(start.toString());
 
-		// String classToAnalyze =
-		// "de.seerhein_lab.jic.analyzer.StackConfinementAcceptanceTest$TestClass";
-		Collection<JavaClass> classes = ClassRepository.getClasses("de.seerhein_lab.jic");
-		// Collection<JavaClass> classes =
-		// ClassRepository.getClasses("org.apache");
+		Collection<JavaClass> classes = ClassRepository.getClasses(args[0]);
 
-		// Collection<JavaClass> classes = ClassRepository.getClasses(args[1]);
+		if (args.length == 2) {
+			Set<AnalysisResult> analysisResults = analyze(args[1], classes);
+			logResults(args[1], analysisResults);
+			logAllSummaries();
+		} else {
+			analyzeAllClasses(classes);
+		}
 
-		// Set<AnalysisResult> analysisResults = analyze(classToAnalyze,
-		// classes);
-		// logResults(classToAnalyze, analysisResults);
+		logAllSummaries();
 
-		analyzeAllClasses(classes);
-
+		Date end = new Date();
+		logger.severe(end.toString() + "\t[ " + (end.getTime() - start.getTime()) / 1000 + " s]");
 	}
 
 	public static Set<AnalysisResult> analyze(String classToCheck,
@@ -81,19 +82,19 @@ public class ConfinementTestDriver {
 			} catch (EmercencyBrakeException e) {
 				notAnalyzedClasses.add(javaClass.getClassName());
 
-			} // catch (Exception e) {
-			// notAnalyzedClasses.add(javaClass.getClassName());
-			// logger.severe("FEHLER : " + e);
-			// }
+			} catch (Exception e) {
+				notAnalyzedClasses.add(javaClass.getClassName());
+				logger.severe("FEHLER : " + e);
+			}
 		}
 
+	}
+
+	private static void logAllSummaries() {
 		logSummary("Stack Confined Classes", stackConfinedClasses);
 		logSummary("NOT Stack Confined Classes", notStackConfinedClasses);
 		logSummary("NOT Instantiated Classes", notInstantiatedClasses);
 		logSummary("Not analyzed Classes: Class to Complex", notAnalyzedClasses);
-
-		Date end = new Date();
-		logger.severe(end.toString() + "\t[ " + (end.getTime() - start.getTime()) / 1000 + " s]");
 	}
 
 	private static void logResults(String classToAnalyze, Set<AnalysisResult> analysisResults) {

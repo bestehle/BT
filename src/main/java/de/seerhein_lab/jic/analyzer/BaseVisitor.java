@@ -373,22 +373,76 @@ public abstract class BaseVisitor extends SimpleVisitor {
 
 	// TODO gibt es eigentlich nicht mehr
 	private void handleLatelyBoundMethod(InvokeInstruction obj) {
-		logger.fine(indentation + obj.toString(false));
-		logger.finest(indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
-				+ obj.getMethodName(constantPoolGen) + obj.getSignature(constantPoolGen));
+		if (false && obj instanceof INVOKEVIRTUAL) {
+			invokeImplementations(obj);
+		} else {
+			logger.fine(indentation + obj.toString(false));
+			logger.finest(indentation + "\t" + obj.getLoadClassType(constantPoolGen) + "."
+					+ obj.getMethodName(constantPoolGen) + obj.getSignature(constantPoolGen));
 
+			for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
+				Slot argument = frame.getStack().pop();
+				if (argument instanceof ReferenceSlot) {
+					ReferenceSlot reference = (ReferenceSlot) argument;
+					// check for bugs
+					detectVirtualMethodBug(reference);
+					heap.publish(reference.getObject(heap));
+				}
+			}
+
+			Slot returnValue = Slot.getDefaultSlotInstance(obj.getReturnType(constantPoolGen));
+
+			// return external reference if returnType reference is expected
+			if (returnValue instanceof ReferenceSlot)
+				returnValue = new ReferenceSlot(heap.newUnknownObjectOfStaticType(obj
+						.getReturnType(constantPoolGen)));
+
+			// works also for void results, because number of required slots = 0
+			frame.getStack().pushByRequiredSize(returnValue);
+
+			pc.advance();
+		}
+	}
+
+	private void invokeImplementations(InvokeInstruction obj) {
 		QualifiedMethod targetMethod = getTargetMethod(obj);
-
 		Set<QualifiedMethod> methodsToAnalyze = new HashSet<QualifiedMethod>();
 
-		if (!targetMethod.getJavaClass().getClassName().equals("java.lang.Object")) {
-			if (targetMethod.getMethod().getCode() != null)
-				methodsToAnalyze.add(targetMethod);
-			for (DetailedClass clazz : repository.getClass(targetMethod.getJavaClass())
-					.getImplementations()) {
-				if (targetMethod.getMethod().getCode() != null)
-					methodsToAnalyze.add(clazz.getMethod(obj.getMethodName(constantPoolGen)));
-			}
+		int length = targetMethod.getMethod().getArgumentTypes().length;
+
+		HeapObject object = ((ReferenceSlot) frame.getStack().get(
+				frame.getStack().size() - 1 - length)).getObject(heap);
+
+		DetailedClass targetClass = repository.getClass(object.getType());
+
+		if (targetClass.getMethod(obj.getMethodName(constantPoolGen)).getMethod().getCode() != null)
+			methodsToAnalyze.add(targetClass.getMethod(obj.getMethodName(constantPoolGen)));
+
+		JavaClass[] interfaces = null;
+		JavaClass[] superClasses = null;
+		try {
+			interfaces = targetClass.getJavaClass().getAllInterfaces();
+			superClasses = targetClass.getJavaClass().getSuperClasses();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		for (JavaClass javaClass : superClasses) {
+			if (repository.getClass(javaClass).getMethod(obj.getMethodName(constantPoolGen)) != null
+					&& repository.getClass(javaClass).getMethod(obj.getMethodName(constantPoolGen))
+							.getMethod().getCode() != null)
+				methodsToAnalyze.add(repository.getClass(javaClass).getMethod(
+						obj.getMethodName(constantPoolGen)));
+		}
+		for (JavaClass javaClass : interfaces) {
+			if (repository.getClass(javaClass).getMethod(obj.getMethodName(constantPoolGen))
+					.getMethod().getCode() != null)
+				methodsToAnalyze.add(repository.getClass(javaClass).getMethod(
+						obj.getMethodName(constantPoolGen)));
+		}
+		for (DetailedClass clazz : targetClass.getImplementations()) {
+			if (clazz.getMethod(obj.getMethodName(constantPoolGen)).getMethod().getCode() != null)
+				methodsToAnalyze.add(clazz.getMethod(obj.getMethodName(constantPoolGen)));
 		}
 
 		if (methodsToAnalyze.size() == 1)
@@ -416,29 +470,6 @@ public abstract class BaseVisitor extends SimpleVisitor {
 		}
 
 		pc.invalidate();
-
-		// for (int i = 0; i < obj.consumeStack(constantPoolGen); i++) {
-		// Slot argument = frame.getStack().pop();
-		// if (argument instanceof ReferenceSlot) {
-		// ReferenceSlot reference = (ReferenceSlot) argument;
-		// // check for bugs
-		// detectVirtualMethodBug(reference);
-		// heap.publish(reference.getObject(heap));
-		// }
-		// }
-		//
-		// Slot returnValue =
-		// Slot.getDefaultSlotInstance(obj.getReturnType(constantPoolGen));
-		//
-		// // return external reference if returnType reference is expected
-		// if (returnValue instanceof ReferenceSlot)
-		// returnValue = new ReferenceSlot(heap.newUnknownObjectOfStaticType(obj
-		// .getReturnType(constantPoolGen)));
-		//
-		// // works also for void results, because number of required slots = 0
-		// frame.getStack().pushByRequiredSize(returnValue);
-		//
-		// pc.advance();
 	}
 
 	// ******************************************************************//
